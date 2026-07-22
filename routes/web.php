@@ -1,0 +1,119 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GuruController;
+use App\Http\Controllers\NilaiController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\MapelController;
+use App\http\Controllers\LaporanController;
+use App\http\Controllers\PhPengetahuanController;
+use App\Http\Controllers\PhKeterampilanController;
+use App\Http\Controllers\PtsController;
+use App\Http\Controllers\PasController;
+use App\Http\Controllers\PresensiSikapController;
+
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [AuthController::class, 'showLogin']);
+Route::get('/login', [AuthController::class, 'showLogin']);
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| AJAX
+|--------------------------------------------------------------------------
+*/
+
+use App\Models\Guru;
+use App\Models\Siswa;
+
+Route::get('/get-siswa/{kelas}', function ($kelas) {
+
+    $guru = Guru::with('kelas')->find(session('id'));
+
+    if (!$guru) {
+        abort(403);
+    }
+
+    if (!$guru->kelas->pluck('id')->contains($kelas)) {
+        abort(403);
+    }
+
+    return Siswa::where('kelas_id',$kelas)
+                ->orderBy('nama')
+                ->get();
+
+});
+
+
+Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
+
+    Route::get('/dashboard', [AuthController::class,'dashboard'])->name('dashboard');
+
+    Route::resource('guru', GuruController::class);
+    Route::resource('siswa', SiswaController::class);
+    Route::resource('kelas', KelasController::class);
+    Route::resource('mapel', MapelController::class);
+    Route::resource('nilai', NilaiController::class);
+
+    Route::get('/guru/{id}/penugasan',[GuruController::class,'penugasan'])->name('guru.penugasan');
+    Route::post('/guru/{id}/penugasan',[GuruController::class,'simpanPenugasan'])->name('guru.penugasan.simpan');
+
+    Route::get('/ph-pengetahuan',[PhPengetahuanController::class,'index'])->name('ph.pengetahuan.index');
+    Route::get('/ph-pengetahuan/create',[PhPengetahuanController::class,'create'])->name('ph.pengetahuan.create');
+    Route::post('/ph-pengetahuan/store',[PhPengetahuanController::class,'store'])->name('ph.pengetahuan.store');
+
+    Route::get('/ph-pengetahuan/{id}/edit',[PhPengetahuanController::class,'edit'])->name('ph.pengetahuan.edit');
+    Route::put('/ph-pengetahuan/{id}',[PhPengetahuanController::class,'update'])->name('ph.pengetahuan.update');
+    Route::delete('/ph-pengetahuan/{id}',[PhPengetahuanController::class,'destroy'])->name('ph.pengetahuan.destroy');
+
+    Route::get('/ph-keterampilan',[PhKeterampilanController::class,'index'])->name('ph.keterampilan.index');
+    Route::get('/ph-keterampilan/create',[PhKeterampilanController::class,'create'])->name('ph.keterampilan.create');
+    Route::post('/ph-keterampilan/store',[PhKeterampilanController::class,'store'])->name('ph.keterampilan.store');
+
+    Route::get('/ph-keterampilan/{id}/edit',[PhKeterampilanController::class,'edit'])->name('ph.keterampilan.edit');
+    Route::put('/ph-keterampilan/{id}',[PhKeterampilanController::class,'update'])->name('ph.keterampilan.update');
+    Route::delete('/ph-keterampilan/{id}',[PhKeterampilanController::class,'destroy'])->name('ph.keterampilan.destroy');
+
+    Route::get('/pts',[PtsController::class,'index'])->name('pts.index');
+    Route::get('/pts/create',[PtsController::class,'create'])->name('pts.create');
+    Route::post('/pts/store',[PtsController::class,'store'])->name('pts.store');
+
+    Route::get('/pts/{id}/edit',[PtsController::class,'edit'])->name('pts.edit');
+    Route::put('/pts/{id}',[PtsController::class,'update'])->name('pts.update');
+    Route::delete('/pts/{id}',[PtsController::class,'destroy'])->name('pts.destroy');
+
+    Route::get('/pas',[PasController::class,'index'])->name('pas.index');
+    Route::get('/pas/create',[PasController::class,'create'])->name('pas.create');
+    Route::post('/pas/store',[PasController::class,'store'])->name('pas.store');
+
+    Route::get('/pas/{id}/edit',[PasController::class,'edit'])->name('pas.edit');
+    Route::put('/pas/{id}',[PasController::class,'update'])->name('pas.update');
+    Route::delete('/pas/{id}',[PasController::class,'destroy'])->name('pas.destroy');
+
+    Route::get('/presensi',[PresensiSikapController::class,'index'])->name('presensi.index');
+    Route::get('/presensi/create',[PresensiSikapController::class,'create'])->name('presensi.create');
+    Route::post('/presensi/store',[PresensiSikapController::class,'store'])->name('presensi.store');
+
+    Route::get('/presensi/{id}/edit',[PresensiSikapController::class,'edit'])->name('presensi.edit');
+    Route::put('/presensi/{id}',[PresensiSikapController::class,'update'])->name('presensi.update');
+    Route::delete('/presensi/{id}',[PresensiSikapController::class,'destroy'])->name('presensi.destroy');
+
+    Route::get('/formatif', [NilaiController::class,'formatif'])->name('formatif.index');
+    Route::get('/formatif/create', [NilaiController::class,'createFormatif'])->name('formatif.create');
+    Route::get('/sumatif', [NilaiController::class,'sumatif'])->name('sumatif.index');
+    Route::get('/sumatif/create', [NilaiController::class,'createSumatif'])->name('sumatif.create');
+
+    Route::get('/nilai/create/{jenis}', [NilaiController::class, 'createByJenis'])
+        ->name('nilai.create.jenis');
+
+    Route::get('/laporan', [LaporanController::class,'index'])->name('laporan');
+    Route::get('/laporan/pdf', [LaporanController::class,'exportPdf'])->name('laporan.pdf');
+});
