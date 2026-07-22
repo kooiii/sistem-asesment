@@ -196,11 +196,6 @@ class="{{ request()->routeIs('laporan') ?'active':'' }}">
 Rekap Nilai
 </a>
 
-<a href="{{ route('laporan.pdf') }}"
-class="{{ request()->routeIs('laporan.pdf') ?'active':'' }}">
-Laporan
-</a>
-
 <a href="{{ route('logout') }}">
 Logout
 </a>
