@@ -18,5 +18,15 @@ class Mapel extends Model
     {
         return $this->belongsToMany(Guru::class,'guru_mapels');
     }
+
+    public function tujuanPembelajarans()
+    {
+        return $this->hasMany(TujuanPembelajaran::class);
+    }
+
+    public function nilaiSumatifs()
+    {
+        return $this->hasMany(NilaiSumatif::class);
+    }
     use HasFactory;
 }

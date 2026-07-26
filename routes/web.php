@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuruController;
+use App\Http\Controllers\TujuanPembelajaranController;
+use App\Http\Controllers\NilaiFormatifController;
 use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\KelasController;
@@ -57,11 +59,15 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
 
     Route::get('/dashboard', [AuthController::class,'dashboard'])->name('dashboard');
 
+    
+    Route::resource('tujuan-pembelajaran',TujuanPembelajaranController::class);
+
+    Route::resource('nilai-formatif', NilaiFormatifController::class);
     Route::resource('guru', GuruController::class);
     Route::resource('siswa', SiswaController::class);
     Route::resource('kelas', KelasController::class);
     Route::resource('mapel', MapelController::class);
-    Route::resource('nilai', NilaiController::class);
+    
 
     Route::get('/guru/{id}/penugasan',[GuruController::class,'penugasan'])->name('guru.penugasan');
     Route::post('/guru/{id}/penugasan',[GuruController::class,'simpanPenugasan'])->name('guru.penugasan.simpan');
@@ -106,14 +112,7 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     Route::put('/presensi/{id}',[PresensiSikapController::class,'update'])->name('presensi.update');
     Route::delete('/presensi/{id}',[PresensiSikapController::class,'destroy'])->name('presensi.destroy');
 
-    Route::get('/formatif', [NilaiController::class,'formatif'])->name('formatif.index');
-    Route::get('/formatif/create', [NilaiController::class,'createFormatif'])->name('formatif.create');
-    Route::get('/sumatif', [NilaiController::class,'sumatif'])->name('sumatif.index');
-    Route::get('/sumatif/create', [NilaiController::class,'createSumatif'])->name('sumatif.create');
-
-    Route::get('/nilai/create/{jenis}', [NilaiController::class, 'createByJenis'])
-        ->name('nilai.create.jenis');
-
+   
     Route::get('/laporan', [LaporanController::class,'index'])->name('laporan');
     Route::get('/laporan/pdf', [LaporanController::class,'exportPdf'])->name('laporan.pdf');
 });

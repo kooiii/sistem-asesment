@@ -2,22 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Siswa extends Model
+class TahunAjaran extends Model
 {
-    use Hasfactory;
-    protected $fillable = ['nis','nama','kelas_id'];    
-    
-    public function kelas()
+    protected $fillable = [
+        'tahun_ajaran',
+        'semester',
+        'aktif'
+    ];
+
+    public function tujuanPembelajarans()
     {
-        return $this->belongsTo(Kelas::class);
+        return $this->hasMany(TujuanPembelajaran::class);
     }
-    public function nilai()
-    {
-        return $this->hasMany(Nilai::class);
-    }
+
     public function nilaiFormatifs()
     {
         return $this->hasMany(NilaiFormatif::class);

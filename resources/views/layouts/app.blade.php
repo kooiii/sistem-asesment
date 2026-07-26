@@ -103,6 +103,8 @@
 
 <body>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <div class="sidebar">
 
      <h4 class="text-center py-3">
@@ -166,14 +168,9 @@ Logout
 
 @else
 
-<a href="{{ route('ph.pengetahuan.index') }}"
-class="{{ request()->routeIs('ph.pengetahuan.*') ?'active':'' }}">
-PH Pengetahuan
-</a>
-
-<a href="{{ route('ph.keterampilan.index') }}"
-class="{{ request()->routeIs('ph.keterampilan.*') ?'active':'' }}">
-PH Keterampilan
+<a href="{{ route('tujuan-pembelajaran.index') }}"
+class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">
+Penilaian Formatif
 </a>
 
 <a href="{{ route('pts.index') }}"

@@ -20,4 +20,9 @@ class Kelas extends Model
     {
         return $this->belongsToMany(Guru::class,'guru_kelas');
     }
+
+    public function tujuanPembelajarans()
+    {
+        return $this->hasMany(TujuanPembelajaran::class);
+    }
 }

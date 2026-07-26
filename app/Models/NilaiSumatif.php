@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Nilai extends Model
+class NilaiSumatif extends Model
 {
     protected $fillable = [
-        'kelas_id',
         'siswa_id',
         'mapel_id',
+        'tahun_ajaran_id',
         'jenis',
-        'kategori',
-        'bobot',
         'nilai'
     ];
 
@@ -24,5 +22,10 @@ class Nilai extends Model
     public function mapel()
     {
         return $this->belongsTo(Mapel::class);
+    }
+
+    public function tahunAjaran()
+    {
+        return $this->belongsTo(TahunAjaran::class);
     }
 }
