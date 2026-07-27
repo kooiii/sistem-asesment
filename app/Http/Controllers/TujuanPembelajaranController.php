@@ -34,24 +34,33 @@ class TujuanPembelajaranController extends Controller
 
         foreach ($data as $tp) {
 
-        $tp->rata_tugas = \App\Models\NilaiFormatif::where('tp_id', $tp->id)
-                        ->where('teknik','Tugas')
-                        ->avg('nilai');
+        $tp->tugas = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
+                    ->where('teknik','Tugas')
+                    ->exists();
 
-        $tp->rata_kuis = \App\Models\NilaiFormatif::where('tp_id', $tp->id)
-                        ->where('teknik','Kuis')
-                        ->avg('nilai');
+        $tp->kuis = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
+                    ->where('teknik','Kuis')
+                    ->exists();
 
-        $tp->rata_praktik = \App\Models\NilaiFormatif::where('tp_id', $tp->id)
-                        ->where('teknik','Praktik')
-                        ->avg('nilai');
+        $tp->praktik = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
+                    ->where('teknik','Praktik')
+                    ->exists();
 
-        $tp->rata_presentasi = \App\Models\NilaiFormatif::where('tp_id', $tp->id)
-                        ->where('teknik','Presentasi')
-                        ->avg('nilai');
+        $tp->presentasi = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
+                    ->where('teknik','Presentasi')
+                    ->exists();
 
-        $tp->rata_tp = \App\Models\NilaiFormatif::where('tp_id', $tp->id)
-                        ->avg('nilai');
+        $tp->rata = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
+                    ->avg('nilai');
+
+        $jumlah = 0;
+
+        if($tp->tugas) $jumlah++;
+        if($tp->kuis) $jumlah++;
+        if($tp->praktik) $jumlah++;
+        if($tp->presentasi) $jumlah++;
+
+        $tp->progress = ($jumlah / 4) * 100;
     }
 
         return view(
@@ -79,8 +88,7 @@ class TujuanPembelajaranController extends Controller
                 ->orderBy('nomor_tp')
                 ->get();
 
-    return view(
-        'tujuan_pembelajaran.create',
+    return view('tujuan_pembelajaran.create',
         compact(
             'guru',
             'tahun',

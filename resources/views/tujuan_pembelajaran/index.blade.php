@@ -2,117 +2,134 @@
 
 @section('content')
 
-<div class="card card-custom">
+<div class="row">
 
-<div class="card-header d-flex justify-content-between">
-<h4>Tujuan Pembelajaran</h4>
-<a href="{{ route('tujuan-pembelajaran.create') }}"
-class="btn btn-primary">Tambah TP</a>
-</div>
+@foreach($data as $tp)
 
-<div class="card-body">
+    <div class="col-md-6 mb-4">
+    <div class="card shadow-sm border-0">
+    <div class="card-header bg-success text-white">
 
-<table class="table table-bordered table-hover">
+    <h5 class="mb-0">
+        TP {{ $tp->nomor_tp }}
+    </h5>
 
-    <thead class="table-success">
+    <small>
+        {{ $tp->judul_tp }}
+    </small>
 
-    <tr>
+    </div>
 
-        <th>No</th>
+    <div class="card-body">
 
-        <th>TP</th>
-
-        <th>Judul TP</th>
-
-        <th>Tugas</th>
-
-        <th>Kuis</th>
-
-        <th>Praktik</th>
-
-        <th>Presentasi</th>
-
-        <th>Rata-rata TP</th>
-
-        <th>Aksi</th>
-
-    </tr>
-
-    </thead>
-
-    <tbody>
-
-    @foreach($data as $tp)
+    <table class="table table-sm">
 
     <tr>
 
-        <td>{{ $loop->iteration }}</td>
+    <td>Tugas</td>
 
-        <td>TP {{ $tp->nomor_tp }}</td>
+    <td>
 
-        <td>{{ $tp->judul_tp }}</td>
+    @if($tp->tugas)
 
-        <td>
+    <span class="badge bg-success">✓ Sudah</span>
+    @else
+    <span class="badge bg-secondary">Belum</span>
+    @endif
 
-            @if($tp->rata_tugas)
-                {{ number_format($tp->rata_tugas,2) }}
-            @else
-                -
-            @endif
-
-        </td>
-
-        <td>
-
-            @if($tp->rata_kuis)
-                {{ number_format($tp->rata_kuis,2) }}
-            @else
-                -
-            @endif
-
-        </td>
-
-        <td>
-
-            @if($tp->rata_praktik)
-                {{ number_format($tp->rata_praktik,2) }}
-            @else
-                -
-            @endif
-
-        </td>
-
-        <td>
-
-            @if($tp->rata_presentasi)
-                {{ number_format($tp->rata_presentasi,2) }}
-            @else
-                -
-            @endif
-
-        </td>
-
-        <td>
-            <span class="badge bg-success">
-                {{ number_format($tp->rata_tp,2) }}
-            </span>
-        </td>
-
-        <td>
-            <a href="{{ route('nilai-formatif.create',['tp'=>$tp->id]) }}"
-               class="btn btn-success btn-sm">Input / Edit Nilai</a>
-        </td>
+    </td>
 
     </tr>
+
+    <tr>
+
+    <td>Kuis</td>
+
+    <td>
+
+    @if($tp->kuis)
+
+    <span class="badge bg-success">✓ Sudah</span>
+    @else
+    <span class="badge bg-secondary">Belum</span>
+    @endif
+
+    </td>
+
+    </tr>
+
+    <tr>
+
+    <td>Praktik</td>
+
+    <td>
+
+    @if($tp->praktik)
+
+    <span class="badge bg-success">✓ Sudah</span>
+
+    @else
+
+    <span class="badge bg-secondary">Belum</span>
+
+    @endif
+
+    </td>
+
+    </tr>
+
+    <tr>
+
+    <td>Presentasi</td>
+
+    <td>
+
+    @if($tp->presentasi)
+
+    <span class="badge bg-success">✓ Sudah</span>
+
+    @else
+
+    <span class="badge bg-secondary">Belum</span>
+
+    @endif
+
+    </td>
+
+    </tr>
+
+    </table>
+
+    <label>Progress Penilaian</label>
+
+    <div class="progress mb-3">
+
+    <div class="progress-bar"
+
+    style="width:{{ $tp->progress }}%">
+        {{ $tp->progress }}%
+
+    </div>
+
+    </div>
+
+    <h5>Rata-rata TP
+
+    <span class="badge bg-primary">
+        {{ number_format($tp->rata,2) }}
+    </span>
+
+    </h5>
+
+    <a href="{{ route('nilai-formatif.create',['tp'=>$tp->id]) }}"
+        class="btn btn-success w-100">Input / Edit Nilai</a>
+
+    </div>
+
+    </div>
+
+    </div>
 
     @endforeach
 
-    </tbody>
-
-</table>
-
 </div>
-
-</div>
-
-@endsection

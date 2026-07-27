@@ -2,170 +2,267 @@
 
 @section('content')
 
-<div class="card card-custom">
+<div class="card shadow">
 
-    <div class="card-header bg-success text-white">
+<div class="card-header bg-success text-white">
 
-        <h4>
+<h4>
 
-            Input Nilai Formatif
+TP {{ $tp->nomor_tp }}
 
-        </h4>
+-
 
-    </div>
+{{ $tp->judul_tp }}
 
-    <div class="card-body">
+</h4>
 
-        <table class="table table-bordered">
+<small>
 
-            <tr>
+{{ $tp->kelas->nama_kelas }}
 
-                <th width="200">Kelas</th>
+|
 
-                <td>{{ $tp->kelas->nama_kelas }}</td>
+{{ $tp->mapel->nama_mapel }}
 
-            </tr>
+</small>
 
-            <tr>
+</div>
 
-                <th>Mapel</th>
+<div class="card-body">
 
-                <td>{{ $tp->mapel->nama_mapel }}</td>
+<form action="{{ route('nilai-formatif.store') }}"
 
-            </tr>
+method="POST">
 
-            <tr>
+@csrf
 
-                <th>TP</th>
+<input type="hidden"
 
-                <td>
+name="tp_id"
 
-                    TP {{ $tp->nomor_tp }}
+value="{{ $tp->id }}">
 
-                    -
+<table class="table table-bordered table-hover">
 
-                    {{ $tp->judul_tp }}
+<thead class="table-success">
 
-                </td>
+<tr>
 
-            </tr>
+<th>No</th>
 
-        </table>
+<th>Nama Siswa</th>
 
-        <form action="{{ route('nilai-formatif.store') }}" method="POST">
+<th width="90">
 
-            @csrf
+Tugas
 
-            <input type="hidden"
-                   name="tp_id"
-                   value="{{ $tp->id }}">
+</th>
 
-            <div class="mb-3">
+<th width="90">
 
-                <label>Teknik Penilaian</label>
+Kuis
 
-                <select
-                    name="teknik"
-                    class="form-control"
-                    onchange="window.location='?tp={{ $tp->id }}&teknik='+this.value">
+</th>
 
-                    <option value="Tugas"
-                        {{ $teknik=='Tugas'?'selected':'' }}>Tugas</option>
+<th width="90">
 
-                    <option value="Kuis"
-                        {{ $teknik=='Kuis'?'selected':'' }}>Kuis</option>
+Praktik
 
-                    <option value="Praktik"
-                        {{ $teknik=='Praktik'?'selected':'' }}>Praktik</option>
+</th>
 
-                    <option value="Presentasi"
-                        {{ $teknik=='Presentasi'?'selected':'' }}>Presentasi</option>
+<th width="110">
 
-                </select>
+Presentasi
 
-            </div>
+</th>
 
-            <table class="table table-striped">
+<th width="90">
 
-                <thead>
+Rata-rata
 
-                    <tr>
+</th>
 
-                        <th width="70">No</th>
+</tr>
 
-                        <th>Nama Siswa</th>
+</thead>
 
-                        <th width="180">
+<tbody>
 
-                            Nilai
+@foreach($siswas as $siswa)
 
-                        </th>
+<tr>
 
-                    </tr>
+<td>
 
-                </thead>
+{{ $loop->iteration }}
 
-                <tbody>
+</td>
 
-                    @foreach($siswas as $siswa)
+<td>
 
-                    <tr>
+{{ $siswa->nama }}
 
-                        <td>
+<input
 
-                            {{ $loop->iteration }}
+type="hidden"
 
-                        </td>
+name="siswa_id[]"
 
-                        <td>
+value="{{ $siswa->id }}">
 
-                            {{ $siswa->nama }}
+</td>
 
-                        </td>
+<td>
 
-                        <td>
+<input
+type="number"
+name="tugas[]"
+class="form-control nilai"
+min="0"
+max="100"
+value="{{ $siswa->tugas }}">
 
-                            <input
-                                type="hidden"
-                                name="siswa_id[]"
-                                value="{{ $siswa->id }}">
+</td>
 
-                            <input
-                                type="number"
-                                name="nilai[]"
-                                class="form-control"
-                                min="0"
-                                max="100"
-                                value="{{ $nilaiLama[$siswa->id] ?? '' }}">
+<td>
 
-                        </td>
+<input
+type="number"
+name="kuis[]"
+class="form-control nilai"
+min="0"
+max="100"
+value="{{ $siswa->kuis }}">
 
-                    </tr>
+</td>
 
-                    @endforeach
+<td>
 
-                </tbody>
+<input
+type="number"
+name="praktik[]"
+class="form-control nilai"
+min="0"
+max="100"
+value="{{ $siswa->praktik }}">
 
-            </table>
+</td>
 
-            <button
-                class="btn btn-success">
+<td>
 
-                Simpan Nilai
+<input
+type="number"
+name="presentasi[]"
+class="form-control nilai"
+min="0"
+max="100"
+value="{{ $siswa->presentasi }}">
 
-            </button>
+</td>
 
-            <a href="{{ route('tujuan-pembelajaran.index') }}"
-               class="btn btn-secondary">
+<td>
 
-               Kembali
+<strong class="rata">
 
-            </a>
+{{ $siswa->rata ?? '-' }}
 
-        </form>
+</strong>
 
-    </div>
+</td>
+
+</tr>
+
+@endforeach
+
+</tbody>
+
+</table>
+
+<button class="btn btn-success">
+
+<i class="fa fa-save"></i>Simpan Semua</button>
+
+<a href="{{ route('tujuan-pembelajaran.index') }}"
+class="btn btn-secondary">Kembali</a>
+
+</form>
+
+</div>
 
 </div>
 
 @endsection
+
+@push('scripts')
+
+<script>
+
+document.querySelectorAll("tbody tr").forEach(function(row){
+
+    function hitung(){
+
+        let total = 0;
+        let jumlah = 0;
+
+        row.querySelectorAll(".nilai").forEach(function(input){
+
+            let v = parseFloat(input.value);
+
+            if(!isNaN(v)){
+
+                total += v;
+                jumlah++;
+
+            }
+
+        });
+
+        let rataCell = row.querySelector(".rata");
+
+        if(jumlah == 0){
+
+            rataCell.innerHTML = "-";
+            rataCell.className = "rata";
+            return;
+
+        }
+
+        let rata = (total / jumlah).toFixed(2);
+
+        rataCell.innerHTML = rata;
+        rataCell.className = "rata";
+
+        if(rata >= 90){
+
+            rataCell.classList.add("text-success");
+
+        }else if(rata >= 80){
+
+            rataCell.classList.add("text-primary");
+
+        }else if(rata >= 70){
+
+            rataCell.classList.add("text-warning");
+
+        }else{
+
+            rataCell.classList.add("text-danger");
+
+        }
+
+    }
+
+    row.querySelectorAll(".nilai").forEach(function(input){
+
+        input.addEventListener("keyup", hitung);
+        input.addEventListener("change", hitung);
+
+    });
+
+    hitung();
+
+});
+
+</script>
+
+@endpush

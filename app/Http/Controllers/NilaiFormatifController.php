@@ -28,24 +28,45 @@ class NilaiFormatifController extends Controller
         'mapel'
     ])->findOrFail($request->tp);
 
-    $teknik = $request->teknik ?? 'Tugas';
-
     $siswas = Siswa::where(
         'kelas_id',
         $tp->kelas_id
-    )->orderBy('nama')->get();
+    )
+    ->orderBy('nama')
+    ->get();
 
-    $nilaiLama = NilaiFormatif::where('tp_id',$tp->id)
-                    ->where('teknik',$teknik)
-                    ->pluck('nilai','siswa_id');
+    foreach($siswas as $siswa){
+
+        $nilai = NilaiFormatif::where('tp_id',$tp->id)
+                    ->where('siswa_id',$siswa->id)
+                    ->get()
+                    ->keyBy('teknik');
+
+        $siswa->tugas = optional($nilai->get('Tugas'))->nilai;
+        $siswa->kuis = optional($nilai->get('Kuis'))->nilai;
+        $siswa->praktik = optional($nilai->get('Praktik'))->nilai;
+        $siswa->presentasi = optional($nilai->get('Presentasi'))->nilai;
+
+        $array = array_filter([
+            $siswa->tugas,
+            $siswa->kuis,
+            $siswa->praktik,
+            $siswa->presentasi
+        ], function($v){
+            return $v !== null;
+        });
+
+        $siswa->rata = count($array)
+            ? round(array_sum($array)/count($array),2)
+            : null;
+
+    }
 
     return view(
         'nilai_formatif.create',
         compact(
             'tp',
-            'siswas',
-            'teknik',
-            'nilaiLama'
+            'siswas'
         )
     );
 }
@@ -57,9 +78,7 @@ class NilaiFormatifController extends Controller
 {
     $request->validate([
         'tp_id' => 'required',
-        'teknik' => 'required',
-        'siswa_id' => 'required|array',
-        'nilai' => 'required|array',
+        'siswa_id' => 'required|array'
     ]);
 
     $tp = TujuanPembelajaran::findOrFail($request->tp_id);
@@ -67,6 +86,7 @@ class NilaiFormatifController extends Controller
     $guru = Guru::with(['kelas','mapel'])
                 ->findOrFail(session('id'));
 
+    // Validasi hak akses guru
     if(!$guru->kelas->pluck('id')->contains($tp->kelas_id)){
         abort(403);
     }
@@ -77,24 +97,31 @@ class NilaiFormatifController extends Controller
 
     foreach($request->siswa_id as $i => $siswaId){
 
-        if($request->nilai[$i] === null || $request->nilai[$i] === ''){
-            continue;
-        }
+        $data = [
 
-        NilaiFormatif::updateOrCreate(
+            'Tugas'      => $request->tugas[$i] ?? null,
+            'Kuis'       => $request->kuis[$i] ?? null,
+            'Praktik'    => $request->praktik[$i] ?? null,
+            'Presentasi' => $request->presentasi[$i] ?? null,
 
-            [
+        ];
+
+        foreach($data as $teknik => $nilai){
+
+            if($nilai === null || $nilai === ''){
+                continue;
+            }
+
+            NilaiFormatif::updateOrCreate([
                 'tp_id' => $tp->id,
                 'siswa_id' => $siswaId,
-                'teknik' => $request->teknik,
-            ],
-
-            [
-                'nilai' => $request->nilai[$i],
-            ]
-
-        );
-
+                'teknik' => $teknik,
+                ],
+                [
+                    'nilai' => $nilai,
+                ]
+            );
+        }
     }
 
     return redirect()
