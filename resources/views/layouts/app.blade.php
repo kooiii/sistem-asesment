@@ -169,19 +169,20 @@ Logout
 @else
 
 <a href="{{ route('tujuan-pembelajaran.index') }}"
-class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">
-Penilaian Formatif
-</a>
+class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian Formatif</a>
 
-<a href="{{ route('pts.index') }}"
-class="{{ request()->routeIs('pts.*') ?'active':'' }}">
-PTS
-</a>
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#sumatifMenu">
+        <i class="fa fa-file-alt"></i>Penilaian Sumatif</a>
 
-<a href="{{ route('pas.index') }}"
-class="{{ request()->routeIs('pas.*') ?'active':'' }}">
-PAS
-</a>
+    <div class="collapse" id="sumatifMenu">
+        <a class="nav-link ms-3"
+           href="{{ route('nilai-sumatif.index') }}">STS</a>
+
+        <a class="nav-link ms-3"
+           href="{{ route('nilai-sumatif.index') }}">SAS</a>
+    </div>
+</li>
 
 <a href="{{ route('presensi.index') }}"
 class="{{ request()->routeIs('presensi.*') ?'active':'' }}">

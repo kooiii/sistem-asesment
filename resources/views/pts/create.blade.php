@@ -2,129 +2,250 @@
 
 @section('content')
 
-<div class="container">
+<div class="card shadow">
 
-<h3>Input Nilai PTS</h3>
+    <div class="card-header bg-primary text-white">
 
-<form action="{{ route('pts.store') }}" method="POST">
+        <h4>Penilaian Sumatif Tengah Semester (STS)</h4>
 
-@csrf
+        <small>
 
-<div class="mb-3">
-    <label>Kelas</label>
+            {{ $kelasDipilih ? $kelasGuru->where('id',$kelasDipilih)->first()->nama_kelas : '-' }}
 
-    <select id="kelas" class="form-control">
+        </small>
 
-        <option value="">-- Pilih Kelas --</option>
+    </div>
 
-        @foreach($kelasGuru as $kelas)
+    <div class="card-body">
 
-        <option value="{{ $kelas->id }}">
+        <form action="{{ route('pts.store') }}" method="POST">
 
-            {{ $kelas->nama_kelas }}
+            @csrf
 
-        </option>
+            <div class="row mb-4">
 
-        @endforeach
+                <div class="col-md-4">
 
-    </select>
+                    <label>Kelas</label>
+
+                    <select
+                        name="kelas"
+                        id="kelas"
+                        class="form-control">
+
+                        <option value="">Pilih Kelas</option>
+
+                        @foreach($kelasGuru as $kelas)
+
+                        <option
+                            value="{{ $kelas->id }}"
+                            {{ $kelasDipilih==$kelas->id?'selected':'' }}>
+                            {{ $kelas->nama_kelas }}
+
+                        </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label>Mapel</label>
+
+                    <select
+                        name="mapel_id"
+                        id="mapel"
+                        class="form-control">
+
+                        @foreach($mapelGuru as $mapel)
+
+                        <option value="{{ $mapel->id }}">
+                            {{ $mapel->nama_mapel }}
+                        </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-primary">
+
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Siswa</th>
+                        <th width="120">Nilai Murni</th>
+                        <th width="120">Remedial</th>
+                        <th width="120">Nilai Akhir</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach($siswas as $siswa)
+
+                    <tr>
+
+                        <td>{{ $loop->iteration }}</td>
+
+                        <td>
+
+                            {{ $siswa->nama }}
+
+                            <input
+                                type="hidden"
+                                name="siswa_id[]"
+                                value="{{ $siswa->id }}">
+
+                        </td>
+
+                        <td>
+
+                            <input
+                                type="number"
+                                name="nm[]"
+                                class="form-control nm"
+                                min="0"
+                                max="100"
+                                value="{{ optional($siswa->pts)->nm }}">
+
+                        </td>
+
+                        <td>
+
+                            <input
+                                type="number"
+                                name="nr[]"
+                                class="form-control nr"
+                                min="0"
+                                max="100"
+                                value="{{ optional($siswa->pts)->nr }}">
+
+                        </td>
+
+                        <td>
+                            <strong class="akhir">
+                                {{ optional($siswa->pts)->n ?? '-' }}
+                            </strong>
+                        </td>
+
+                    </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+            <button class="btn btn-success">
+
+                <i class="fa fa-save"></i>
+
+                Simpan Semua
+
+            </button>
+
+            <a
+                href="{{ route('pts.index') }}"
+                class="btn btn-secondary">
+
+                Kembali
+
+            </a>
+
+        </form>
+
+    </div>
+
 </div>
 
-<div class="mb-3">
+@endsection
 
-    <label>Mata Pelajaran</label>
-
-    <select name="mapel_id" class="form-control">
-
-        @foreach($mapelGuru as $mapel)
-
-        <option value="{{ $mapel->id }}">
-
-            {{ $mapel->nama_mapel }}
-
-        </option>
-
-        @endforeach
-
-    </select>
-
-</div>
-
-<div class="mb-3">
-
-    <label>Siswa</label>
-
-    <select name="siswa_id" id="siswa" class="form-control">
-
-        <option value="">-- Pilih Siswa --</option>
-
-    </select>
-
-</div>
-
-<div class="mb-3">
-
-    <label>Nilai Murni (NM)</label>
-
-    <input type="number"
-           name="nm"
-           class="form-control"
-           required>
-
-</div>
-
-<div class="mb-3">
-
-    <label>Nilai Remedial (NR)</label>
-
-    <input type="number"
-           name="nr"
-           class="form-control">
-
-</div>
-
-<button class="btn btn-success">
-    Simpan
-</button>
-
-<a href="{{ route('pts.index') }}"
-class="btn btn-secondary">
-
-Kembali
-
-</a>
-
-</form>
-
-</div>
+@push('scripts')
 
 <script>
 
-document.getElementById('kelas').addEventListener('change',function(){
+document.querySelectorAll("tbody tr").forEach(function(row){
 
-    let kelas = this.value;
+    function hitung(){
 
-    fetch('/get-siswa/'+kelas)
+        let nm=parseFloat(row.querySelector(".nm").value);
 
-    .then(res=>res.json())
+        let nr=parseFloat(row.querySelector(".nr").value);
 
-    .then(data=>{
+        let nilai="-";
 
-        let siswa = document.getElementById('siswa');
+        if(!isNaN(nr)){
 
-        siswa.innerHTML='<option value="">-- Pilih Siswa --</option>';
+            nilai=nr;
 
-        data.forEach(function(item){
+        }else if(!isNaN(nm)){
 
-            siswa.innerHTML +=
-            <option value="${item.id}">${item.nama}</option>;
+            nilai=nm;
 
-        });
+        }
 
-    });
+        let cell=row.querySelector(".akhir");
+
+        cell.innerHTML=nilai;
+
+        cell.className="akhir";
+
+        if(nilai=="-") return;
+
+        if(nilai>=90){
+
+            cell.classList.add("text-success");
+
+        }else if(nilai>=80){
+
+            cell.classList.add("text-primary");
+
+        }else if(nilai>=70){
+
+            cell.classList.add("text-warning");
+
+        }else{
+
+            cell.classList.add("text-danger");
+
+        }
+
+    }
+
+    row.querySelector(".nm").addEventListener("keyup",hitung);
+
+    row.querySelector(".nr").addEventListener("keyup",hitung);
+
+    row.querySelector(".nm").addEventListener("change",hitung);
+
+    row.querySelector(".nr").addEventListener("change",hitung);
+
+    hitung();
 
 });
 
+document.getElementById("kelas").addEventListener("change", reload);
+
+document.getElementById("mapel").addEventListener("change", reload);
+
+function reload(){
+
+    let kelas = document.getElementById("kelas").value;
+
+    let mapel = document.getElementById("mapel").value;
+
+    window.location =
+        "?kelas="+kelas+"&mapel_id="+mapel;
+
+}
 </script>
 
-@endsection
+@endpush

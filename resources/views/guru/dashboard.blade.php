@@ -28,7 +28,8 @@
     <div class="col-md-3">
         <div class="card card-custom p-3">
             <h5>Total Nilai</h5>
-            <h2>{{ $totalNilai }}</h2>
+            <h2>Formatif : {{ $totalNilaiFormatif }}
+                Sumatif : {{ $totalNilaiSumatif }}</h2>
         </div>
     </div>
 </div>

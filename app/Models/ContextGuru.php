@@ -4,21 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class NilaiSumatif extends Model
+class ContextGuru extends Model
 {
     protected $fillable = [
-
-        'siswa_id',
+        'guru_id',
+        'kelas_id',
         'mapel_id',
-        'tahun_ajaran_id',
-        'jenis',
-        'nilai'
-
+        'tahun_ajaran_id'
     ];
 
-    public function siswa()
+    public function guru()
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->belongsTo(Guru::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
     }
 
     public function mapel()

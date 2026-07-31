@@ -36,7 +36,7 @@ return new class extends Migration
         ]);
         
         $table->foreignId('tahun_ajaran_id')
-        ->constrained()
+        ->constrained('tahun_ajarans')
         ->cascadeOnDelete();
 
         $table->timestamps();

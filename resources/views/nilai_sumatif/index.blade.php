@@ -6,7 +6,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <h3>Penilaian Sumatif Tengah Semester (STS)</h3>
+        <h3>Penilaian Sumatif {{ $jenis }}</h3>
 
         <div>
 
@@ -14,8 +14,13 @@
                 <i class="fa fa-arrow-left"></i> Kembali
             </a>
 
-            <a href="{{ route('pts.create') }}" class="btn btn-primary">
-                <i class="fa fa-plus"></i> Input Nilai STS
+            <a href="{{ route('nilai-sumatif.create',['jenis'=>$jenis]) }}"
+               class="btn btn-primary">
+
+                <i class="fa fa-plus"></i>
+
+                Input Nilai
+
             </a>
 
         </div>
@@ -34,6 +39,30 @@
 
     <div class="card shadow">
 
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+
+            <strong>Data Nilai Sumatif</strong>
+
+            <div>
+
+                <a href="{{ route('nilai-sumatif.index',['jenis'=>'STS']) }}"
+                   class="btn btn-light btn-sm {{ $jenis=='STS' ? 'active' : '' }}">
+
+                    STS
+
+                </a>
+
+                <a href="{{ route('nilai-sumatif.index',['jenis'=>'SAS']) }}"
+                   class="btn btn-light btn-sm {{ $jenis=='SAS' ? 'active' : '' }}">
+
+                    SAS
+
+                </a>
+
+            </div>
+
+        </div>
+
         <div class="card-body">
 
             <table class="table table-bordered table-hover">
@@ -50,9 +79,11 @@
 
                         <th>Mata Pelajaran</th>
 
-                        <th width="120">Nilai STS</th>
+                        <th width="120">Jenis</th>
 
-                        <th width="150" class="text-center">Aksi</th>
+                        <th width="120">Nilai</th>
+
+                        <th width="170">Aksi</th>
 
                     </tr>
 
@@ -74,29 +105,33 @@
 
                         <td>
 
+                            <span class="badge bg-info">
+
+                                {{ $d->jenis }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
                             <strong>{{ $d->nilai }}</strong>
 
                         </td>
 
-                        <td class="text-center">
+                        <td>
 
-                            <a href="{{ route('pts.edit',$d->id) }}"
-                               class="btn btn-warning btn-sm">
+                           <td>
 
-                                <i class="fa fa-edit"></i>
-
-                            </a>
-
-                            <form action="{{ route('pts.destroy',$d->id) }}"
+                            <form action="{{ route('nilai-sumatif.destroy',$d->id) }}"
                                   method="POST"
                                   class="d-inline">
 
                                 @csrf
                                 @method('DELETE')
 
-                                <button
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
 
                                     <i class="fa fa-trash"></i>
 
@@ -112,9 +147,9 @@
 
                     <tr>
 
-                        <td colspan="6" class="text-center">
+                        <td colspan="7" class="text-center">
 
-                            Belum ada data nilai STS.
+                            Belum ada data nilai {{ $jenis }}.
 
                         </td>
 

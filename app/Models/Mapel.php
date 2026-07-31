@@ -9,11 +9,6 @@ class Mapel extends Model
 {
     protected $fillable = ['nama_mapel'];
 
-    public function nilai()
-    {
-        return $this->hasMany(Nilai::class);
-    }
-
     public function guru()
     {
         return $this->belongsToMany(Guru::class,'guru_mapels');
@@ -27,6 +22,11 @@ class Mapel extends Model
     public function nilaiSumatifs()
     {
         return $this->hasMany(NilaiSumatif::class);
+    }
+
+    public function contextGuru()
+    {
+        return $this->hasMany(ContextGuru::class);
     }
     use HasFactory;
 }

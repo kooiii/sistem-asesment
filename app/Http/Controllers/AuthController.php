@@ -58,14 +58,17 @@ class AuthController extends Controller
         $totalSiswa = \App\Models\Siswa::count();
         $totalKelas = \App\Models\Kelas::count();
         $totalMapel = \App\Models\Mapel::count();
-        $totalNilai = \App\Models\Nilai::count();
+
+        $totalNilaiFormatif = \App\Models\NilaiFormatif::count();
+        $totalNilaiSumatif  = \App\Models\NilaiSumatif::count();
 
         return view('guru.dashboard', compact(
             'guru',
             'totalSiswa',
             'totalKelas',
             'totalMapel',
-            'totalNilai'
+            'totalNilaiFormatif',
+            'totalNilaiSumatif'
         ));
     }
 

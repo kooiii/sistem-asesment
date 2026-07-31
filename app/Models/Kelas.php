@@ -25,4 +25,9 @@ class Kelas extends Model
     {
         return $this->hasMany(TujuanPembelajaran::class);
     }
+
+    public function contextGuru()
+    {
+        return $this->hasMany(ContextGuru::class);
+    }
 }

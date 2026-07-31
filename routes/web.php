@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\TujuanPembelajaranController;
 use App\Http\Controllers\NilaiFormatifController;
+use App\Http\Controllers\NilaiSumatifController;
 use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\KelasController;
@@ -12,8 +13,6 @@ use App\Http\Controllers\MapelController;
 use App\http\Controllers\LaporanController;
 use App\http\Controllers\PhPengetahuanController;
 use App\Http\Controllers\PhKeterampilanController;
-use App\Http\Controllers\PtsController;
-use App\Http\Controllers\PasController;
 use App\Http\Controllers\PresensiSikapController;
 
 /*
@@ -63,6 +62,7 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     Route::resource('tujuan-pembelajaran',TujuanPembelajaranController::class);
 
     Route::resource('nilai-formatif', NilaiFormatifController::class);
+    Route::resource('nilai-sumatif', NilaiSumatifController::class)->except(['edit','update']);
     Route::resource('guru', GuruController::class);
     Route::resource('siswa', SiswaController::class);
     Route::resource('kelas', KelasController::class);
@@ -88,22 +88,7 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     Route::put('/ph-keterampilan/{id}',[PhKeterampilanController::class,'update'])->name('ph.keterampilan.update');
     Route::delete('/ph-keterampilan/{id}',[PhKeterampilanController::class,'destroy'])->name('ph.keterampilan.destroy');
 
-    Route::get('/pts',[PtsController::class,'index'])->name('pts.index');
-    Route::get('/pts/create',[PtsController::class,'create'])->name('pts.create');
-    Route::post('/pts/store',[PtsController::class,'store'])->name('pts.store');
-
-    Route::get('/pts/{id}/edit',[PtsController::class,'edit'])->name('pts.edit');
-    Route::put('/pts/{id}',[PtsController::class,'update'])->name('pts.update');
-    Route::delete('/pts/{id}',[PtsController::class,'destroy'])->name('pts.destroy');
-
-    Route::get('/pas',[PasController::class,'index'])->name('pas.index');
-    Route::get('/pas/create',[PasController::class,'create'])->name('pas.create');
-    Route::post('/pas/store',[PasController::class,'store'])->name('pas.store');
-
-    Route::get('/pas/{id}/edit',[PasController::class,'edit'])->name('pas.edit');
-    Route::put('/pas/{id}',[PasController::class,'update'])->name('pas.update');
-    Route::delete('/pas/{id}',[PasController::class,'destroy'])->name('pas.destroy');
-
+   
     Route::get('/presensi',[PresensiSikapController::class,'index'])->name('presensi.index');
     Route::get('/presensi/create',[PresensiSikapController::class,'create'])->name('presensi.create');
     Route::post('/presensi/store',[PresensiSikapController::class,'store'])->name('presensi.store');

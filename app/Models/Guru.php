@@ -28,4 +28,9 @@ class Guru extends Model
     {
         return $this->hasMany(TujuanPembelajaran::class);
     }
+
+    public function context()
+    {
+        return $this->hasOne(ContextGuru::class);
+    }
 }
