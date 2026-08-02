@@ -1,45 +1,270 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
+    <meta charset="utf-8">
+
+    <title>Laporan Nilai Siswa</title>
+
     <style>
-        table{
-            width:100%;
-            border-collapse;
+
+        body{
+
+            font-family: DejaVu Sans, sans-serif;
+
+            font-size:12px;
+
         }
-        th,td{
-            border:1px solid black;
-            padding:8px;
+
+        h2,h4{
+
+            margin:0;
+
+            text-align:center;
+
+        }
+
+        p{
+
+            margin-top:5px;
+
+            margin-bottom:15px;
+
+            text-align:center;
+
+        }
+
+        table{
+
+            width:100%;
+
+            border-collapse:collapse;
+
+            margin-top:15px;
+
+        }
+
+        table th{
+
+            background:#e9ecef;
+
+            border:1px solid #000;
+
+            padding:7px;
+
+            text-align:center;
+
+        }
+
+        table td{
+
+            border:1px solid #000;
+
+            padding:6px;
+
+        }
+
+        .center{
+
+            text-align:center;
+
+        }
+
+        .right{
+
+            text-align:right;
+
         }
 
     </style>
+
 </head>
 
 <body>
-    <h2 align="center">LAPORAN NILAI SISWA<br>SMK Negeri 1 Sungai Tebelian</h2>
 
-    <table>
-        <tr>
-            <th>No</th>
-            <th>Nama</th>
-            <th>Kelas</th>
-            <th>Formatif</th>
-            <th>Sumatif</th>
-            <th>Nilai Akhir</th>
-        </tr>
-        @foreach ($laporan as $l)
-        <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $l['nama'] }}</td>
-            <td>{{ $l['kelas'] }}</td>
-            <td>{{ $l['formatif'] }}</td>
-            <td>{{ $l['sumatif'] }}</td>
-            <td>{{ $l['akhir'] }}</td>
-        </tr>
-            
-        @endforeach
+<h2>
 
-    </table>
+SMK NEGERI 1 SUNGAI TEBELIAN
+
+</h2>
+
+<h4>
+
+LAPORAN REKAP NILAI SISWA
+
+</h4>
+
+<p>
+
+Tahun Ajaran
+
+{{ $tahun->tahun_ajaran }}
+
+-
+
+Semester
+
+{{ $tahun->semester }}
+
+</p>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th width="35">No</th>
+
+<th>Nama Siswa</th>
+
+<th>Kelas</th>
+
+<th>Mapel</th>
+
+<th>Formatif</th>
+
+<th>STS</th>
+
+<th>SAS</th>
+
+<th>Akhir</th>
+
+<th>Predikat</th>
+
+<th>Sikap</th>
+
+<th>Presensi</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+@forelse($laporan as $row)
+
+<tr>
+
+<td class="center">
+
+{{ $loop->iteration }}
+
+</td>
+
+<td>
+
+{{ $row['nama'] }}
+
+</td>
+
+<td class="center">
+
+{{ $row['kelas'] }}
+
+</td>
+
+<td>
+
+{{ $row['mapel'] }}
+
+</td>
+
+<td class="center">
+
+{{ number_format($row['formatif'],2) }}
+
+</td>
+
+<td class="center">
+
+{{ number_format($row['sts'],2) }}
+
+</td>
+
+<td class="center">
+
+{{ number_format($row['sas'],2) }}
+
+</td>
+
+<td class="center">
+
+<strong>
+
+{{ number_format($row['akhir'],2) }}
+
+</strong>
+
+</td>
+
+<td class="center">
+
+{{ $row['predikat'] }}
+
+</td>
+
+<td class="center">
+
+{{ number_format($row['sikap'],2) }}
+
+</td>
+
+<td class="center">
+
+{{ number_format($row['presensi'],2) }}
+
+</td>
+
+</tr>
+
+@empty
+
+<tr>
+
+<td colspan="11" class="center">
+
+Belum ada data nilai.
+
+</td>
+
+</tr>
+
+@endforelse
+
+</tbody>
+
+</table>
+
+<br><br>
+
+<table style="width:100%;border:none;">
+
+<tr style="border:none;">
+
+<td style="border:none;"></td>
+
+<td style="border:none;text-align:center;width:250px;">
+
+Sintang,
+
+{{ date('d-m-Y') }}
+
+<br><br>
+
+Guru Mata Pelajaran
+
+<br><br><br><br>
+
+_________________________
+
+</td>
+
+</tr>
+
+</table>
 
 </body>
+
 </html>

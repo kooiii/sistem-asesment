@@ -4,59 +4,265 @@
 
 <div class="container">
 
-<h3>Input Presensi & Sikap</h3>
+    @if(session('success'))
 
-<form action="{{ route('presensi.update', $data->id) }}" method="POST">
+    <div class="alert alert-success alert-dismissible fade show">
 
-@csrf
-@method('PUT')
+        <i class="fa fa-check-circle"></i>
 
-<div class="mb-3">
-    <label>Siswa</label>
+        {{ session('success') }}
 
-    <select name="siswa_id" class="form-control">
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert">
+        </button>
 
-        @foreach($siswas as $s)
+    </div>
 
-        <option value="{{ $s->id }}">
-            {{ $data->siswa_id==$s->id?'selected':'' }}>
-            {{ $s->nama }}
-        </option>
+    @endif
 
-        @endforeach
+    @if(session('error'))
 
-    </select>
-</div>
+    <div class="alert alert-danger alert-dismissible fade show">
 
-<div class="mb-3">
-    <label>Nilai Presensi</label>
+        <i class="fa fa-times-circle"></i>
 
-    <input type="number"
-            name="presensi"
-            class="form-control"
-            value="{{ $data->presensi }}">
-</div>
+        {{ session('error') }}
 
-<div class="mb-3">
-    <label>Nilai Sikap</label>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert">
+        </button>
 
-    <input type="number"
-            name="sikap"
-            class="form-control"
-            value="{{ $data->sikap }}">
-</div>
+    </div>
 
-<button class="btn btn-success">
-    Update
-</button>
+    @endif
 
-<a href="{{ route('presensi.index') }}"
-   class="btn btn-secondary">
-   Kembali
-</a>
+    <div class="card shadow">
 
-</form>
+        <div class="card-header bg-warning text-dark">
+
+            <h4 class="mb-0">
+
+                Edit Sikap & Presensi
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-info">
+
+                <div class="row">
+
+                    <div class="col-md-4">
+
+                        <strong>Kelas Aktif</strong>
+
+                        <br>
+
+                        {{ optional($guru->kelas->where('id',session('kelas_aktif'))->first())->nama_kelas }}
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <strong>Nama Siswa</strong>
+
+                        <br>
+
+                        {{ $data->siswa->nama }}
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <strong>Tahun Ajaran</strong>
+
+                        <br>
+
+                        {{ optional($data->tahunAjaran)->tahun_ajaran }}
+                        {{ optional($data->tahunAjaran)->semester }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <form
+                action="{{ route('presensi.update',$data->id) }}"
+                method="POST">
+
+                @csrf
+
+                @method('PUT')
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Nilai Sikap
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="sikap"
+                            id="sikap"
+                            class="form-control"
+                            min="0"
+                            max="100"
+                            value="{{ old('sikap',$data->sikap) }}"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Nilai Presensi
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="presensi"
+                            class="form-control"
+                            min="0"
+                            max="100"
+                            value="{{ old('presensi',$data->presensi) }}"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <div class="row mt-4">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Predikat Sikap
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="predikat"
+                            class="form-control"
+                            readonly>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-4">
+
+                    <button
+                        class="btn btn-warning">
+
+                        <i class="fa fa-save"></i>
+
+                        Update
+
+                    </button>
+
+                    <a
+                        href="{{ route('presensi.index') }}"
+                        class="btn btn-secondary">
+
+                        Kembali
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 
 @endsection
+
+@push('scripts')
+
+<script>
+
+function hitungPredikat(){
+
+    let nilai = parseFloat(
+
+        document.getElementById("sikap").value
+
+    );
+
+    let predikat = "-";
+
+    if(!isNaN(nilai)){
+
+        if(nilai>=90){
+
+            predikat="SB";
+
+        }
+
+        else if(nilai>=80){
+
+            predikat="B";
+
+        }
+
+        else if(nilai>=70){
+
+            predikat="C";
+
+        }
+
+        else{
+
+            predikat="K";
+
+        }
+
+    }
+
+    document.getElementById("predikat").value = predikat;
+
+}
+
+document.getElementById("sikap")
+
+.addEventListener(
+
+    "keyup",
+
+    hitungPredikat
+
+);
+
+document.getElementById("sikap")
+
+.addEventListener(
+
+    "change",
+
+    hitungPredikat
+
+);
+
+hitungPredikat();
+
+</script>
+
+@endpush

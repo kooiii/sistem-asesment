@@ -2,150 +2,224 @@
 
 @section('content')
 
-<div class="card card-custom">
+<div class="container">
 
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Penilaian Formatif - Tujuan Pembelajaran</h4>
-    </div>
+    {{-- Notifikasi --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
 
-    <div class="card-body">
-        @if(session('success'))
+            <i class="fa fa-check-circle"></i>
 
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fa fa-check-circle"></i>
             {{ session('success') }}
-        <button type="button"
-            class="btn-close"
-            data-bs-dismiss="alert">
-        </button>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="fa fa-times-circle"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    @endif
+
+    {{-- Card Input TP --}}
+    <div class="card shadow mb-4">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4 class="mb-0">
+
+                Penilaian Formatif - Tujuan Pembelajaran
+
+            </h4>
 
         </div>
 
-        @endif
+        <div class="card-body">
 
-        <form action="{{ route('tujuan-pembelajaran.store') }}" method="POST">
+            <form action="{{ route('tujuan-pembelajaran.store') }}" method="POST">
 
-            @csrf
+                @csrf
 
-            <div class="row">
+                <div class="alert alert-info">
 
-                <div class="col-md-6 mb-3">
-                    <label>Kelas</label>
+                    <div class="row">
 
-                    <select name="kelas_id" class="form-control" required>
+                        <div class="col-md-6">
 
-                        <option value="">-- Pilih Kelas --</option>
+                            <label class="fw-bold">
 
-                        @foreach($guru->kelas as $kelas)
+                                Kelas Aktif
 
-                            <option value="{{ $kelas->id }}">
-                                {{ $kelas->nama_kelas }}
-                            </option>
+                            </label>
 
-                        @endforeach
+                            <input
+                                type="text"
+                                class="form-control"
+                                value="{{ optional($guru->kelas->where('id',session('kelas_aktif'))->first())->nama_kelas }}"
+                                readonly>
 
-                    </select>
+                        </div>
 
-                </div>
+                        <div class="col-md-6">
 
-                <div class="col-md-6 mb-3">
+                            <label class="fw-bold">
 
-                    <label>Mata Pelajaran</label>
+                                Mata Pelajaran Aktif
 
-                    <select name="mapel_id" class="form-control" required>
+                            </label>
 
-                        <option value="">-- Pilih Mata Pelajaran --</option>
+                            <input
+                                type="text"
+                                class="form-control"
+                                value="{{ optional($guru->mapel->where('id',session('mapel_aktif'))->first())->nama_mapel }}"
+                                readonly>
 
-                        @foreach($guru->mapel as $mapel)
+                        </div>
 
-                            <option value="{{ $mapel->id }}">
-                                {{ $mapel->nama_mapel }}
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div class="row">
-
-                <div class="col-md-3 mb-3">
-
-                    <label>Nomor TP</label>
-
-                    <input
-                        type="number"
-                        min="1"
-                        name="nomor_tp"
-                        class="form-control"
-                        required>
+                    </div>
 
                 </div>
 
-                <div class="col-md-9 mb-3">
+                <div class="row">
 
-                    <label>Judul TP</label>
+                    <div class="col-md-2">
 
-                    <input
-                        type="number"
-                        name="nomor_tp"
-                        class="form-control"
-                        value="{{ $nomorTP }}"
-                        readonly>
+                        <label class="form-label">
+
+                            Nomor TP
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="nomor_tp"
+                            class="form-control"
+                            min="1"
+                            value="{{ old('nomor_tp',$nomorTP) }}"
+                            required>
+
+                        @error('nomor_tp')
+
+                            <small class="text-danger">
+
+                                {{ $message }}
+
+                            </small>
+
+                        @enderror
+
+                        <small class="text-muted">
+
+                            Nomor dapat diubah jika diperlukan.
+
+                        </small>
+
+                    </div>
+
+                    <div class="col-md-10">
+
+                        <label class="form-label">
+
+                            Judul Tujuan Pembelajaran
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="judul_tp"
+                            class="form-control"
+                            value="{{ old('judul_tp') }}"
+                            placeholder="Contoh : Instalasi Sistem Operasi"
+                            required>
+
+                        @error('judul_tp')
+
+                            <small class="text-danger">
+
+                                {{ $message }}
+
+                            </small>
+
+                        @enderror
+
+                    </div>
 
                 </div>
 
-            </div>
+                <div class="mt-4">
 
-            <button class="btn btn-primary">
+                    <button class="btn btn-primary">
 
-                <i class="fa fa-save"></i>
+                        <i class="fa fa-save"></i>
 
-                Simpan TP
+                        Simpan TP
 
-            </button>
+                    </button>
 
-            <a href="{{ route('tujuan-pembelajaran.index') }}"
-                class="btn btn-secondary">
+                    <a
+                        href="{{ route('tujuan-pembelajaran.index') }}"
+                        class="btn btn-secondary">
 
-                Kembali
+                        <i class="fa fa-arrow-left"></i>
 
-            </a>
+                        Kembali
 
-        </form>
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 
-</div>
+    {{-- Daftar TP --}}
+    <div class="card shadow">
 
-<br>
+        <div class="card-header bg-success text-white">
 
-<div class="card card-custom">
+            <h5 class="mb-0">
 
-    <div class="card-header">
+                Daftar Tujuan Pembelajaran
 
-        <h5 class="mb-0">
-            Tujuan Pembelajaran yang Sudah Dibuat
-        </h5>
+            </h5>
 
-    </div>
+        </div>
 
-    <div class="card-body">
+        <div class="card-body">
 
-        @if($data->count())
+            @if($data->count())
 
-            <table class="table table-bordered">
+            <table class="table table-bordered table-hover align-middle">
 
                 <thead class="table-light">
 
                     <tr>
 
+                        <th width="60">No</th>
+
                         <th width="80">TP</th>
 
                         <th>Judul Tujuan Pembelajaran</th>
+
+                        <th width="260">Aksi</th>
 
                     </tr>
 
@@ -153,43 +227,96 @@
 
                 <tbody>
 
-                    @foreach($data as $tp)
+                @foreach($data as $tp)
 
-                    <tr>
+                <tr>
 
-                        <td>
+                    <td>
 
-                            <strong>
+                        {{ $loop->iteration }}
 
-                                TP {{ $tp->nomor_tp }}
+                    </td>
 
-                            </strong>
+                    <td>
 
-                        </td>
+                        <strong>
 
-                        <td>
+                            TP {{ $tp->nomor_tp }}
 
-                            {{ $tp->judul_tp }}
+                        </strong>
 
-                        </td>
+                    </td>
 
-                    </tr>
+                    <td>
 
-                    @endforeach
+                        {{ $tp->judul_tp }}
+
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{{ route('nilai-formatif.create',['tp'=>$tp->id]) }}"
+                            class="btn btn-success btn-sm">
+
+                            <i class="fa fa-pencil"></i>
+
+                            Input Nilai
+
+                        </a>
+
+                        <a
+                            href="{{ route('tujuan-pembelajaran.edit',$tp->id) }}"
+                            class="btn btn-warning btn-sm">
+
+                            <i class="fa fa-edit"></i>
+
+                            Edit
+
+                        </a>
+
+                        <form
+                            action="{{ route('tujuan-pembelajaran.destroy',$tp->id) }}"
+                            method="POST"
+                            style="display:inline;">
+
+                            @csrf
+
+                            @method('DELETE')
+
+                            <button
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Hapus TP ini?')">
+
+                                <i class="fa fa-trash"></i>
+
+                                Hapus
+
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                @endforeach
 
                 </tbody>
 
             </table>
 
-        @else
+            @else
 
-            <div class="alert alert-info mb-0">
+                <div class="alert alert-warning mb-0">
 
-                Belum ada Tujuan Pembelajaran yang dibuat.
+                    Belum ada Tujuan Pembelajaran yang dibuat.
 
-            </div>
+                </div>
 
-        @endif
+            @endif
+
+        </div>
 
     </div>
 

@@ -13,131 +13,94 @@ class TujuanPembelajaranController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
+{
+    $kelasAktif = session('kelas_aktif');
 
-        $kelasIds = $guru->kelas->pluck('id');
+    $mapelAktif = session('mapel_aktif');
 
-        $mapelIds = $guru->mapel->pluck('id');
-
-        $data = TujuanPembelajaran::with([
+    $guru = Guru::with([
         'kelas',
-        'mapel',
-        'tahunAjaran'
-        ])
-        ->where('guru_id',$guru->id)
-        ->whereIn('kelas_id',$kelasIds)
-        ->whereIn('mapel_id',$mapelIds)
-        ->orderBy('kelas_id')
+        'mapel'
+    ])->findOrFail(session('id'));
+
+    $data = TujuanPembelajaran::where(
+            'kelas_id',
+            $kelasAktif
+        )
+        ->where(
+            'mapel_id',
+            $mapelAktif
+        )
         ->orderBy('nomor_tp')
         ->get();
 
-        foreach ($data as $tp) {
+    $nomorTP = $data->count() + 1;
 
-        $tp->tugas = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
-                    ->where('teknik','Tugas')
-                    ->exists();
-
-        $tp->kuis = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
-                    ->where('teknik','Kuis')
-                    ->exists();
-
-        $tp->praktik = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
-                    ->where('teknik','Praktik')
-                    ->exists();
-
-        $tp->presentasi = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
-                    ->where('teknik','Presentasi')
-                    ->exists();
-
-        $tp->rata = \App\Models\NilaiFormatif::where('tp_id',$tp->id)
-                    ->avg('nilai');
-
-        $jumlah = 0;
-
-        if($tp->tugas) $jumlah++;
-        if($tp->kuis) $jumlah++;
-        if($tp->praktik) $jumlah++;
-        if($tp->presentasi) $jumlah++;
-
-        $tp->progress = ($jumlah / 4) * 100;
-    }
-
-        return view(
-        'tujuan_pembelajaran.index',
-        compact('data')
-        );
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-{
-    $guru = Guru::with(['kelas','mapel'])
-        ->findOrFail(session('id'));
-
-    $tahun = TahunAjaran::where('aktif',true)->first();
-
-    $nomorTP = TujuanPembelajaran::where('guru_id',$guru->id)
-                    ->max('nomor_tp');
-
-    $nomorTP = $nomorTP ? $nomorTP + 1 : 1;
-
-    $data = TujuanPembelajaran::where('guru_id',$guru->id)
-                ->orderBy('nomor_tp')
-                ->get();
-
-    return view('tujuan_pembelajaran.create',
+    return view(
+        'tujuan_pembelajaran.create',
         compact(
             'guru',
-            'tahun',
-            'nomorTP',
-            'data'
+            'data',
+            'nomorTP'
         )
     );
 }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('tujuan_pembelajaran.create');
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $request->validate([
+{
+    $request->validate([
 
-        'kelas_id'=>'required',
-
-        'mapel_id'=>'required',
-
-        'nomor_tp'=>'required',
+        'nomor_tp'=>'required|integer|min:1',
 
         'judul_tp'=>'required'
 
-        ]);
+    ]);
 
-        $tahun = TahunAjaran::where('aktif',true)->first();
+    $guru = Guru::with([
+        'kelas',
+        'mapel'
+    ])->findOrFail(session('id'));
 
-        TujuanPembelajaran::create([
+    $kelasAktif = session('kelas_aktif');
 
-        'guru_id'=>session('id'),
+    $mapelAktif = session('mapel_aktif');
 
-        'kelas_id'=>$request->kelas_id,
+    if(!$guru->kelas->pluck('id')->contains($kelasAktif)){
+        abort(403);
+    }
 
-        'mapel_id'=>$request->mapel_id,
+    if(!$guru->mapel->pluck('id')->contains($mapelAktif)){
+        abort(403);
+    }
 
-        'tahun_ajaran_id'=>$tahun->id,
+    TujuanPembelajaran::create([
+
+        'kelas_id'=>$kelasAktif,
+
+        'mapel_id'=>$mapelAktif,
 
         'nomor_tp'=>$request->nomor_tp,
 
         'judul_tp'=>$request->judul_tp
 
-        ]);
-        
+    ]);
 
-        return redirect()
-        ->route('tujuan-pembelajaran.create')
-        ->with('success','TP berhasil ditambahkan');
-    }
+    return back()->with(
+        'success',
+        'TP berhasil ditambahkan.'
+    );
+}
 
     /**
      * Display the specified resource.

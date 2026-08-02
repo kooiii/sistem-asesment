@@ -2,42 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Guru;
-use App\Models\Kelas;
-use App\Models\Mapel;
 use App\Models\Siswa;
 use App\Models\NilaiSumatif;
 use App\Models\TahunAjaran;
-use Illuminate\Http\Request;
 
 class NilaiSumatifController extends Controller
 {
     public function index(Request $request)
     {
-        $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
 
+        $kelasAktif = session('kelas_aktif');
+        $mapelAktif = session('mapel_aktif');
         $jenis = $request->jenis ?? 'STS';
 
+        $tahun = TahunAjaran::where('aktif',true)->first();
         $data = NilaiSumatif::with([
-            'siswa.kelas',
+            'siswa',
             'mapel',
             'tahunAjaran'
         ])
-        ->where('jenis',$jenis)
-        ->whereIn('mapel_id',$guru->mapel->pluck('id'))
-        ->whereHas('siswa',function($q) use($guru){
 
-            $q->whereIn(
-                'kelas_id',
-                $guru->kelas->pluck('id')
-            );
+        ->where('jenis',$jenis)
+        ->where('mapel_id',$mapelAktif)
+        ->where('tahun_ajaran_id',$tahun->id)
+        ->whereHas('siswa',function($q) use($kelasAktif){
+            $q->where('kelas_id',$kelasAktif);
 
         })
-        ->latest()
+
+        ->orderBy('siswa_id')
         ->get();
 
-        return view(
-            'nilai_sumatif.index',
+        return view('nilai_sumatif.index',
             compact(
                 'data',
                 'jenis'
@@ -46,122 +48,148 @@ class NilaiSumatifController extends Controller
     }
 
     public function create(Request $request)
-{
-    $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
+    {
+        $kelasAktif = session('kelas_aktif');
+        $mapelAktif = session('mapel_aktif');
 
-    $kelasDipilih = $request->kelas;
+        $jenis = $request->jenis ?? 'STS';
+        $tahun = TahunAjaran::where('aktif',true)->first();
 
-    $mapelDipilih = $request->mapel_id;
+        $siswas = Siswa::where(
+            'kelas_id',
+            $kelasAktif
+        )
 
-    $jenis = $request->jenis ?? 'STS';
+        ->with(['nilaiSumatif'=>function($q)
+            use($mapelAktif,$jenis,$tahun){
+                $q->where(
+                    'mapel_id',
+                    $mapelAktif
+                )
 
-    $tahun = TahunAjaran::where('aktif', true)->first();
+                ->where(
+                    'jenis',
+                    $jenis
+                )
 
-    if($kelasDipilih){
+                ->where(
+                    'tahun_ajaran_id',
+                    $tahun->id
+                );
+            }
+        ])
 
-        $siswas = Siswa::where('kelas_id',$kelasDipilih)
-            ->with(['nilaiSumatif'=>function($q) use($mapelDipilih,$jenis,$tahun){
+        ->orderBy('nama')
+        ->get();
 
-                if($tahun){
-
-                    $q->where('mapel_id',$mapelDipilih)
-                      ->where('jenis',$jenis)
-                      ->where('tahun_ajaran_id',$tahun->id);
-
-                }
-
-            }])
-            ->orderBy('nama')
-            ->get();
-
-    }else{
-
-        $siswas = collect();
-
+        return view('nilai_sumatif.create',
+            compact(
+                'siswas',
+                'jenis'
+            )
+        );
     }
 
-    return view(
-        'nilai_sumatif.create',
-        compact(
-            'guru',
-            'siswas',
-            'jenis',
-            'kelasDipilih',
-            'mapelDipilih'
-        )
-    );
-}
-
     public function store(Request $request)
-{
-    $request->validate([
-        'mapel_id' => 'required|exists:mapels,id',
+    {
+        $request->validate([
         'jenis' => 'required|in:STS,SAS',
         'siswa_id' => 'required|array',
         'nilai' => 'required|array'
-    ]);
+        ]);
 
-    $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
 
-    if(!$guru->mapel->pluck('id')->contains($request->mapel_id)){
-        abort(403);
-    }
+        $kelasAktif = session('kelas_aktif');
 
-    $tahun = TahunAjaran::where('aktif', true)->first();
+        $mapelAktif = session('mapel_aktif');
 
-    if(!$tahun){
-        return back()->with('error','Tahun ajaran aktif belum tersedia.');
-    }
-
-    foreach($request->siswa_id as $i => $siswaId){
-
-        $siswa = Siswa::findOrFail($siswaId);
-
-        if(!$guru->kelas->pluck('id')->contains($siswa->kelas_id)){
-            continue;
+        if(!$guru->kelas->pluck('id')->contains($kelasAktif)){
+            abort(403);
         }
 
-        NilaiSumatif::updateOrCreate(
-            [
-                'siswa_id'=>$siswaId,
-                'mapel_id'=>$request->mapel_id,
-                'jenis'=>$request->jenis,
-                'tahun_ajaran_id'=>$tahun->id
-            ],
+        if(!$guru->mapel->pluck('id')->contains($mapelAktif)){
+            abort(403);
+        }
 
-            [
-                'nilai'=>$request->nilai[$i]
-            ]
+        $tahun = TahunAjaran::where('aktif',true)->first();
 
-        );
+        if(!$tahun){
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
 
+        foreach($request->siswa_id as $i => $siswaId){
+
+            $siswa = Siswa::findOrFail($siswaId);
+            if($siswa->kelas_id != $kelasAktif){
+                continue;
+            }
+            $nilai = $request->nilai[$i];
+            if($nilai === '' || $nilai === null){
+                continue;
+            }
+
+            NilaiSumatif::updateOrCreate(
+                [
+                    'siswa_id' => $siswaId,
+                    'mapel_id' => $mapelAktif,
+                    'jenis' => $request->jenis,
+                    'tahun_ajaran_id' => $tahun->id
+                ],
+                [
+                    'nilai' => $nilai
+                ]
+            );
+        }
+
+        return redirect()
+            ->route(
+                'nilai-sumatif.index',
+                [
+                    'jenis'=>$request->jenis
+                ]
+            )
+
+            ->with('success','Nilai '.$request->jenis.' berhasil disimpan.'
+            );
     }
-
-    return redirect()
-            ->route('nilai-sumatif.index',[
-                'jenis'=>$request->jenis
-            ])
-            ->with('success','Nilai berhasil disimpan.');
-}
 
 public function destroy($id)
 {
-    $data = NilaiSumatif::findOrFail($id);
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
 
-    $jenis = $data->jenis;
+        $kelasAktif = session('kelas_aktif');
+        $mapelAktif = session('mapel_aktif');
+        $data = NilaiSumatif::with('siswa')->findOrFail($id);
 
-    $data->delete();
+        if($data->mapel_id != $mapelAktif){
+            abort(403);
+        }
 
-    return redirect()
+        if($data->siswa->kelas_id != $kelasAktif){
+            abort(403);
+        }
+
+        $jenis = $data->jenis;
+        $data->delete();
+        return redirect()
             ->route(
                 'nilai-sumatif.index',
                 [
                     'jenis'=>$jenis
                 ]
             )
-            ->with(
-                'success',
-                'Data berhasil dihapus.'
-            );
-}
+
+            ->with('success','Data berhasil dihapus.'
+        );
+    }
 }

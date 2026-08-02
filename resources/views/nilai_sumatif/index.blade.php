@@ -4,166 +4,192 @@
 
 <div class="container">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+@if(session('success'))
 
-        <h3>Penilaian Sumatif {{ $jenis }}</h3>
+<div class="alert alert-success alert-dismissible fade show">
 
-        <div>
+    {{ session('success') }}
 
-            <a href="{{ route('dashboard') }}" class="btn btn-secondary">
-                <i class="fa fa-arrow-left"></i> Kembali
-            </a>
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert">
+    </button>
 
-            <a href="{{ route('nilai-sumatif.create',['jenis'=>$jenis]) }}"
-               class="btn btn-primary">
+</div>
 
-                <i class="fa fa-plus"></i>
+@endif
 
-                Input Nilai
+<div class="card shadow">
 
-            </a>
+<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
 
-        </div>
+    <h4 class="mb-0">
+
+        Penilaian Sumatif
+
+    </h4>
+
+    <div>
+
+        <a
+            href="{{ route('nilai-sumatif.index',['jenis'=>'STS']) }}"
+            class="btn {{ $jenis=='STS' ? 'btn-warning' : 'btn-light' }} btn-sm">
+
+            STS
+
+        </a>
+
+        <a
+            href="{{ route('nilai-sumatif.index',['jenis'=>'SAS']) }}"
+            class="btn {{ $jenis=='SAS' ? 'btn-warning' : 'btn-light' }} btn-sm">
+
+            SAS
+
+        </a>
+
+        <a
+            href="{{ route('nilai-sumatif.create',['jenis'=>$jenis]) }}"
+            class="btn btn-success btn-sm">
+
+            <i class="fa fa-plus"></i>
+
+            Input Nilai
+
+        </a>
 
     </div>
 
-    @if(session('success'))
+</div>
 
-        <div class="alert alert-success">
+<div class="card-body">
 
-            {{ session('success') }}
+@if($data->count())
 
-        </div>
+<table class="table table-bordered table-hover align-middle">
 
-    @endif
+<thead class="table-primary">
 
-    <div class="card shadow">
+<tr>
 
-        <div class="card-header bg-primary text-white d-flex justify-content-between">
+<th width="60">
 
-            <strong>Data Nilai Sumatif</strong>
+No
 
-            <div>
+</th>
 
-                <a href="{{ route('nilai-sumatif.index',['jenis'=>'STS']) }}"
-                   class="btn btn-light btn-sm {{ $jenis=='STS' ? 'active' : '' }}">
+<th>
 
-                    STS
+Nama Siswa
 
-                </a>
+</th>
 
-                <a href="{{ route('nilai-sumatif.index',['jenis'=>'SAS']) }}"
-                   class="btn btn-light btn-sm {{ $jenis=='SAS' ? 'active' : '' }}">
+<th width="120">
 
-                    SAS
+Jenis
 
-                </a>
+</th>
 
-            </div>
+<th width="120">
 
-        </div>
+Nilai
 
-        <div class="card-body">
+</th>
 
-            <table class="table table-bordered table-hover">
+<th width="160">
 
-                <thead class="table-primary">
+Aksi
 
-                    <tr>
+</th>
 
-                        <th width="60">No</th>
+</tr>
 
-                        <th>Nama Siswa</th>
+</thead>
 
-                        <th>Kelas</th>
+<tbody>
 
-                        <th>Mata Pelajaran</th>
+@foreach($data as $d)
 
-                        <th width="120">Jenis</th>
+<tr>
 
-                        <th width="120">Nilai</th>
+<td>
 
-                        <th width="170">Aksi</th>
+{{ $loop->iteration }}
 
-                    </tr>
+</td>
 
-                </thead>
+<td>
 
-                <tbody>
+{{ $d->siswa->nama }}
 
-                    @forelse($data as $d)
+</td>
 
-                    <tr>
+<td>
 
-                        <td>{{ $loop->iteration }}</td>
+<span class="badge bg-primary">
 
-                        <td>{{ $d->siswa->nama }}</td>
+{{ $d->jenis }}
 
-                        <td>{{ $d->siswa->kelas->nama_kelas }}</td>
+</span>
 
-                        <td>{{ $d->mapel->nama_mapel }}</td>
+</td>
 
-                        <td>
+<td>
 
-                            <span class="badge bg-info">
+<strong>
 
-                                {{ $d->jenis }}
+{{ $d->nilai }}
 
-                            </span>
+</strong>
 
-                        </td>
+</td>
 
-                        <td>
+<td>
 
-                            <strong>{{ $d->nilai }}</strong>
+<form
+action="{{ route('nilai-sumatif.destroy',$d->id) }}"
+method="POST"
+style="display:inline;">
 
-                        </td>
+@csrf
 
-                        <td>
+@method('DELETE')
 
-                           <td>
+<button
+class="btn btn-danger btn-sm"
+onclick="return confirm('Yakin ingin menghapus nilai ini?')">
 
-                            <form action="{{ route('nilai-sumatif.destroy',$d->id) }}"
-                                  method="POST"
-                                  class="d-inline">
+<i class="fa fa-trash"></i>
 
-                                @csrf
-                                @method('DELETE')
+Hapus
 
-                                <button class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
+</button>
 
-                                    <i class="fa fa-trash"></i>
+</form>
 
-                                </button>
+</td>
 
-                            </form>
+</tr>
 
-                        </td>
+@endforeach
 
-                    </tr>
+</tbody>
 
-                    @empty
+</table>
 
-                    <tr>
+@else
 
-                        <td colspan="7" class="text-center">
+<div class="alert alert-warning mb-0">
 
-                            Belum ada data nilai {{ $jenis }}.
+Belum ada nilai {{ $jenis }} yang diinput.
 
-                        </td>
+</div>
 
-                    </tr>
+@endif
 
-                    @endforelse
+</div>
 
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
+</div>
 
 </div>
 

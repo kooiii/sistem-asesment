@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('nip')->unique();
             $table->string('nama');
             $table->string('password');
+            $table->enum('role',[
+                'admin',
+                'guru'
+            ])->default('guru');
             $table->timestamps();
         });
     }

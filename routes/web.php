@@ -6,13 +6,10 @@ use App\Http\Controllers\GuruController;
 use App\Http\Controllers\TujuanPembelajaranController;
 use App\Http\Controllers\NilaiFormatifController;
 use App\Http\Controllers\NilaiSumatifController;
-use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\MapelController;
-use App\http\Controllers\LaporanController;
-use App\http\Controllers\PhPengetahuanController;
-use App\Http\Controllers\PhKeterampilanController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PresensiSikapController;
 
 /*
@@ -35,8 +32,13 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 use App\Models\Guru;
 use App\Models\Siswa;
 
-Route::get('/get-siswa/{kelas}', function ($kelas) {
+use App\Http\Controllers\DashboardGuruController;
 
+Route::post(
+    '/guru/context',
+    [DashboardGuruController::class,'ubahContext'])->name('guru.context');
+
+Route::get('/get-siswa/{kelas}', function ($kelas) {
     $guru = Guru::with('kelas')->find(session('id'));
 
     if (!$guru) {
@@ -52,6 +54,8 @@ Route::get('/get-siswa/{kelas}', function ($kelas) {
                 ->get();
 
 });
+
+Route::post('/ganti-context',[AuthController::class,'gantiContext'])->name('ganti.context');
 
 
 Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
@@ -71,23 +75,6 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
 
     Route::get('/guru/{id}/penugasan',[GuruController::class,'penugasan'])->name('guru.penugasan');
     Route::post('/guru/{id}/penugasan',[GuruController::class,'simpanPenugasan'])->name('guru.penugasan.simpan');
-
-    Route::get('/ph-pengetahuan',[PhPengetahuanController::class,'index'])->name('ph.pengetahuan.index');
-    Route::get('/ph-pengetahuan/create',[PhPengetahuanController::class,'create'])->name('ph.pengetahuan.create');
-    Route::post('/ph-pengetahuan/store',[PhPengetahuanController::class,'store'])->name('ph.pengetahuan.store');
-
-    Route::get('/ph-pengetahuan/{id}/edit',[PhPengetahuanController::class,'edit'])->name('ph.pengetahuan.edit');
-    Route::put('/ph-pengetahuan/{id}',[PhPengetahuanController::class,'update'])->name('ph.pengetahuan.update');
-    Route::delete('/ph-pengetahuan/{id}',[PhPengetahuanController::class,'destroy'])->name('ph.pengetahuan.destroy');
-
-    Route::get('/ph-keterampilan',[PhKeterampilanController::class,'index'])->name('ph.keterampilan.index');
-    Route::get('/ph-keterampilan/create',[PhKeterampilanController::class,'create'])->name('ph.keterampilan.create');
-    Route::post('/ph-keterampilan/store',[PhKeterampilanController::class,'store'])->name('ph.keterampilan.store');
-
-    Route::get('/ph-keterampilan/{id}/edit',[PhKeterampilanController::class,'edit'])->name('ph.keterampilan.edit');
-    Route::put('/ph-keterampilan/{id}',[PhKeterampilanController::class,'update'])->name('ph.keterampilan.update');
-    Route::delete('/ph-keterampilan/{id}',[PhKeterampilanController::class,'destroy'])->name('ph.keterampilan.destroy');
-
    
     Route::get('/presensi',[PresensiSikapController::class,'index'])->name('presensi.index');
     Route::get('/presensi/create',[PresensiSikapController::class,'create'])->name('presensi.create');
@@ -98,6 +85,8 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     Route::delete('/presensi/{id}',[PresensiSikapController::class,'destroy'])->name('presensi.destroy');
 
    
-    Route::get('/laporan', [LaporanController::class,'index'])->name('laporan');
-    Route::get('/laporan/pdf', [LaporanController::class,'exportPdf'])->name('laporan.pdf');
+    Route::prefix('laporan')->group(function(){
+
+    Route::get('/',[LaporanController::class,'index'])->name('laporan.index');
+    Route::get('/pdf',[LaporanController::class,'exportPdf'])->name('laporan.pdf');});
 });

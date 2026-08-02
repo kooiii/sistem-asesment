@@ -14,18 +14,42 @@ class NilaiFormatif extends Model
         'nilai'
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relasi Siswa
+    |--------------------------------------------------------------------------
+    */
+
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relasi Tujuan Pembelajaran
+    |--------------------------------------------------------------------------
+    */
+
     public function tp()
     {
-        return $this->belongsTo(TujuanPembelajaran::class,'tp_id');
+        return $this->belongsTo(
+            TujuanPembelajaran::class,
+            'tp_id'
+        );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relasi Tahun Ajaran
+    |--------------------------------------------------------------------------
+    */
 
     public function tahunAjaran()
     {
-        return $this->belongsTo(TahunAjaran::class);
+        return $this->belongsTo(
+            TahunAjaran::class,
+            'tahun_ajaran_id'
+        );
     }
 }

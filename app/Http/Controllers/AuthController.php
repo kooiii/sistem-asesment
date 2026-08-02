@@ -53,23 +53,75 @@ class AuthController extends Controller
                 ));
             }
 
-        $guru = Guru::with(['kelas','mapel'])->find(session('id'));
+        $guru = Guru::with([
+                'kelas',
+                'mapel'
+            ])->find(session('id'));
+            if(!$guru){
+                abort(403);
+            }
 
-        $totalSiswa = \App\Models\Siswa::count();
-        $totalKelas = \App\Models\Kelas::count();
-        $totalMapel = \App\Models\Mapel::count();
+            /*
+            |--------------------------------------------------------------------------
+            | Context Guru
+            |--------------------------------------------------------------------------
+            */
 
-        $totalNilaiFormatif = \App\Models\NilaiFormatif::count();
-        $totalNilaiSumatif  = \App\Models\NilaiSumatif::count();
+            if(!session()->has('kelas_aktif')){
+                session([
+                    'kelas_aktif' => optional($guru->kelas->first())->id
+                ]);
+            }
 
-        return view('guru.dashboard', compact(
-            'guru',
-            'totalSiswa',
-            'totalKelas',
-            'totalMapel',
-            'totalNilaiFormatif',
-            'totalNilaiSumatif'
-        ));
+            if(!session()->has('mapel_aktif')){
+                session([
+                    'mapel_aktif' => optional($guru->mapel->first())->id
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Data Dashboard
+            |--------------------------------------------------------------------------
+            */
+
+            $totalSiswa = \App\Models\Siswa::where(
+                'kelas_id',
+                session('kelas_aktif')
+            )->count();
+
+            $totalTP = \App\Models\TujuanPembelajaran::where(
+                'kelas_id',
+                session('kelas_aktif')
+
+            )->where(
+                'mapel_id',
+                session('mapel_aktif')
+
+            )->count();
+
+            $totalFormatif = \App\Models\NilaiFormatif::count();
+            $totalSumatif = \App\Models\NilaiSumatif::count();
+
+            return view('guru.dashboard',
+                compact(
+                    'guru',
+                    'totalSiswa',
+                    'totalTP',
+                    'totalFormatif',
+                    'totalSumatif'
+                )
+
+            );
+    }
+
+    public function gantiContext(Request $request)
+    {
+        session([
+            'kelas_aktif'=>$request->kelas_id,
+            'mapel_aktif'=>$request->mapel_id
+        ]);
+        return back();
     }
 
     // LOGOUT

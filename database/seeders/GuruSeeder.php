@@ -2,22 +2,39 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Guru;
 use Illuminate\Support\Facades\Hash;
 
 class GuruSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Guru::create([
+
+            'nip' => '123456',
+            'nama' => 'Administrator',
+            'password' => Hash::make('123456'),
+            'role' => 'admin',
+
+        ]);
+
+        Guru::create([
+
             'nip' => '12345',
-            'nama' => 'Abangkuh',
+            'nama' => 'Guru Informatika',
             'password' => Hash::make('12345'),
+            'role' => 'guru',
+
+        ]);
+
+        Guru::create([
+
+            'nip' => '19801223',
+            'nama' => 'Guru Matematika',
+            'password' => Hash::make('12345'),
+            'role' => 'guru',
+
         ]);
     }
 }

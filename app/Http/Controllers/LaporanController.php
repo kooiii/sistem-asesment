@@ -4,164 +4,295 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Siswa;
-use App\Models\Nilai;
+use App\Models\NilaiFormatif;
+use App\Models\NilaiSumatif;
+use App\Models\SikapPresensi;
+use App\Models\TahunAjaran;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
     public function index()
-    {
-        // ADMIN
-        if(session('role') == 'admin'){
+{
+    $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
 
-            $siswas = Siswa::with('kelas')->get();
+    $tahun = TahunAjaran::where('aktif',true)->first();
 
-            $laporan = [];
+    if(!$tahun){
 
-            foreach($siswas as $siswa){
+        return back()->with(
+            'error',
+            'Tahun ajaran aktif belum tersedia.'
+        );
 
-                $formatif = Nilai::where('siswa_id',$siswa->id)
-                    ->where('jenis','formatif')
-                    ->avg('nilai');
-
-                $sumatif = Nilai::where('siswa_id',$siswa->id)
-                    ->where('jenis','sumatif')
-                    ->avg('nilai');
-
-                $nilaiAkhir = (($formatif ?? 0) * 0.4) + (($sumatif ?? 0) * 0.6);
-
-                $laporan[] = [
-                    'nama' => $siswa->nama,
-                    'kelas' => $siswa->kelas->nama_kelas ?? '-',
-                    'mapel' => 'Semua Mata Pelajaran',
-                    'formatif' => round($formatif,2),
-                    'sumatif' => round($sumatif,2),
-                    'akhir' => round($nilaiAkhir,2),
-                ];
-            }
-
-        }
-
-        // GURU
-        else{
-
-            $guru = Guru::with(['kelas','mapel'])->find(session('id'));
-
-            $kelasIds = $guru->kelas->pluck('id');
-
-            $mapelIds = $guru->mapel->pluck('id');
-
-            $siswas = Siswa::with('kelas')
-                        ->whereIn('kelas_id',$kelasIds)
-                        ->get();
-
-            $laporan = [];
-
-            foreach($siswas as $siswa){
-
-                $formatif = Nilai::where('siswa_id',$siswa->id)
-                    ->whereIn('mapel_id',$mapelIds)
-                    ->where('jenis','formatif')
-                    ->avg('nilai');
-
-                $sumatif = Nilai::where('siswa_id',$siswa->id)
-                    ->whereIn('mapel_id',$mapelIds)
-                    ->where('jenis','sumatif')
-                    ->avg('nilai');
-
-                $nilaiAkhir = (($formatif ?? 0) * 0.4) + (($sumatif ?? 0) * 0.6);
-
-                $laporan[] = [
-                    'nama' => $siswa->nama,
-                    'kelas' => $siswa->kelas->nama_kelas ?? '-',
-                    'mapel' => $guru->mapel->pluck('nama_mapel')->implode(', '),
-                    'formatif' => round($formatif,2),
-                    'sumatif' => round($sumatif,2),
-                    'akhir' => round($nilaiAkhir,2),
-                ];
-            }
-
-        }
-
-        return view('laporan.index', compact('laporan'));
     }
+
+    if(session('role') == 'admin'){
+
+        $siswas = Siswa::with('kelas')
+                    ->orderBy('nama')
+                    ->get();
+
+    }else{
+
+        $siswas = Siswa::with('kelas')
+
+                    ->whereIn(
+                        'kelas_id',
+                        $guru->kelas->pluck('id')
+                    )
+
+                    ->orderBy('nama')
+                    ->get();
+
+    }
+
+    $laporan = [];
+
+    foreach($siswas as $siswa){
+        $formatif = NilaiFormatif::where(
+        'siswa_id',
+        $siswa->id
+        )
+
+        ->where(
+        'tahun_ajaran_id',
+        $tahun->id
+        )
+
+        ->avg('nilai');
+        $formatif = round(
+        $formatif ?? 0,2
+        );
+
+        $sts = NilaiSumatif::where(
+        'siswa_id',
+        $siswa->id
+        )
+
+        ->where(
+        'tahun_ajaran_id',
+        $tahun->id
+        )
+
+        ->where(
+        'jenis',
+        'STS'
+        )
+
+        ->avg('nilai');
+        $sts = round(
+        $sts ?? 0,2
+        );
+
+        $sas = NilaiSumatif::where(
+        'siswa_id',
+        $siswa->id
+        )
+
+        ->where(
+        'tahun_ajaran_id',
+        $tahun->id
+        )
+
+        ->where(
+        'jenis',
+        'SAS'
+        )
+
+        ->avg('nilai');
+        $sas = round(
+        $sas ?? 0,2
+        );
+
+        $sikap = SikapPresensi::where(
+        'siswa_id',
+        $siswa->id
+        )
+        ->where(
+        'tahun_ajaran_id',
+        $tahun->id
+        )
+        ->first();
+
+        $nilaiSikap = $sikap ? $sikap->sikap : 0;
+        $nilaiPresensi = $sikap ? $sikap->presensi : 0;
+
+        $nilaiAkhir = round(
+        ($formatif * 0.40)+($sts * 0.30)+($sas * 0.30),2);
+
+        if($nilaiAkhir >= 90){
+            $predikat = 'A';
+            }
+        elseif($nilaiAkhir >= 80){
+            $predikat = 'B';
+            }
+        elseif($nilaiAkhir >= 70){
+            $predikat = 'C';
+            }
+        else{
+            $predikat = 'D';
+            }
+
+        $laporan[] = [
+
+        'nama' => $siswa->nama,
+        'kelas' => optional($siswa->kelas)->nama_kelas,
+        'mapel' => session('role') == 'admin'
+        ? '-'
+        : $guru->mapel
+                ->pluck('nama_mapel')
+                ->implode(', '),
+
+        'formatif' => $formatif,
+        'sts' => $sts,
+        'sas' => $sas,
+        'akhir' => $nilaiAkhir,
+        'predikat' => $predikat,
+        'sikap' => $nilaiSikap,
+        'presensi' => $nilaiPresensi
+    ];
+    }
+
+    return view('laporan.index',
+    compact(
+        'laporan',
+        'tahun'
+    )
+);
 
     public function exportPdf()
-    {
-        // ADMIN
-        if(session('role') == 'admin'){
+{
+    $guru = Guru::with(['kelas','mapel'])->find(session('id'));
 
-            $siswas = Siswa::with('kelas')->get();
+    $tahun = TahunAjaran::where('aktif', true)->first();
 
-            $laporan = [];
-
-            foreach($siswas as $siswa){
-
-                $formatif = Nilai::where('siswa_id',$siswa->id)
-                    ->where('jenis','formatif')
-                    ->avg('nilai');
-
-                $sumatif = Nilai::where('siswa_id',$siswa->id)
-                    ->where('jenis','sumatif')
-                    ->avg('nilai');
-
-                $nilaiAkhir = (($formatif ?? 0) * 0.4) + (($sumatif ?? 0) * 0.6);
-
-                $laporan[] = [
-                    'nama' => $siswa->nama,
-                    'kelas' => $siswa->kelas->nama_kelas ?? '-',
-                    'mapel' => 'Semua Mata Pelajaran',
-                    'formatif' => round($formatif,2),
-                    'sumatif' => round($sumatif,2),
-                    'akhir' => round($nilaiAkhir,2),
-                ];
-            }
-
-        }
-
-        // GURU
-        else{
-
-            $guru = Guru::with(['kelas','mapel'])->find(session('id'));
-
-            $kelasIds = $guru->kelas->pluck('id');
-
-            $mapelIds = $guru->mapel->pluck('id');
-
-            $siswas = Siswa::with('kelas')
-                        ->whereIn('kelas_id',$kelasIds)
-                        ->get();
-
-            $laporan = [];
-
-            foreach($siswas as $siswa){
-
-                $formatif = Nilai::where('siswa_id',$siswa->id)
-                    ->whereIn('mapel_id',$mapelIds)
-                    ->where('jenis','formatif')
-                    ->avg('nilai');
-
-                $sumatif = Nilai::where('siswa_id',$siswa->id)
-                    ->whereIn('mapel_id',$mapelIds)
-                    ->where('jenis','sumatif')
-                    ->avg('nilai');
-
-                $nilaiAkhir = (($formatif ?? 0) * 0.4) + (($sumatif ?? 0) * 0.6);
-
-                $laporan[] = [
-                    'nama' => $siswa->nama,
-                    'kelas' => $siswa->kelas->nama_kelas ?? '-',
-                    'mapel' => $guru->mapel->pluck('nama_mapel')->implode(', '),
-                    'formatif' => round($formatif,2),
-                    'sumatif' => round($sumatif,2),
-                    'akhir' => round($nilaiAkhir,2),
-                ];
-            }
-
-        }
-
-        $pdf = Pdf::loadView('laporan.pdf', compact('laporan'));
-
-        return $pdf->download('laporan_nilai.pdf');
+    if(!$tahun){
+        return back()->with(
+            'error',
+            'Tahun ajaran aktif belum tersedia.'
+        );
     }
+
+    if(session('role') == 'admin'){
+
+        $siswas = Siswa::with('kelas')
+                    ->orderBy('nama')
+                    ->get();
+
+    }else{
+
+        $siswas = Siswa::with('kelas')
+                    ->whereIn(
+                        'kelas_id',
+                        $guru->kelas->pluck('id')
+                    )
+                    ->orderBy('nama')
+                    ->get();
+
+    }
+
+    $laporan = [];
+
+    foreach($siswas as $siswa){
+
+        $formatif = round(
+            NilaiFormatif::where('siswa_id',$siswa->id)
+                ->where('tahun_ajaran_id',$tahun->id)
+                ->avg('nilai') ?? 0,
+            2
+        );
+
+        $sts = round(
+            NilaiSumatif::where('siswa_id',$siswa->id)
+                ->where('tahun_ajaran_id',$tahun->id)
+                ->where('jenis','STS')
+                ->avg('nilai') ?? 0,
+            2
+        );
+
+        $sas = round(
+            NilaiSumatif::where('siswa_id',$siswa->id)
+                ->where('tahun_ajaran_id',$tahun->id)
+                ->where('jenis','SAS')
+                ->avg('nilai') ?? 0,
+            2
+        );
+
+        $sp = SikapPresensi::where(
+                'siswa_id',
+                $siswa->id
+            )
+            ->where(
+                'tahun_ajaran_id',
+                $tahun->id
+            )
+            ->first();
+
+        $nilaiSikap = $sp->sikap ?? 0;
+
+        $nilaiPresensi = $sp->presensi ?? 0;
+
+        $akhir = round(
+            ($formatif * 0.40)
+            +
+            ($sts * 0.30)
+            +
+            ($sas * 0.30),
+        2);
+
+        if($akhir >= 90){
+            $predikat = 'A';
+        }
+        elseif($akhir >= 80){
+            $predikat = 'B';
+        }
+        elseif($akhir >= 70){
+            $predikat = 'C';
+        }
+        else{
+            $predikat = 'D';
+        }
+
+        $laporan[] = [
+
+            'nama' => $siswa->nama,
+
+            'kelas' => optional($siswa->kelas)->nama_kelas,
+
+            'mapel' => session('role') == 'admin'
+                ? '-'
+                : $guru->mapel
+                        ->pluck('nama_mapel')
+                        ->implode(', '),
+
+            'formatif' => $formatif,
+
+            'sts' => $sts,
+
+            'sas' => $sas,
+
+            'akhir' => $akhir,
+
+            'predikat' => $predikat,
+
+            'sikap' => $nilaiSikap,
+
+            'presensi' => $nilaiPresensi
+
+        ];
+
+    }
+
+    $pdf = Pdf::loadView(
+        'laporan.pdf',
+        compact(
+            'laporan',
+            'tahun'
+        )
+    );
+
+    return $pdf->download('Laporan Nilai.pdf');
+}
+}
 }

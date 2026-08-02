@@ -189,7 +189,7 @@ class="{{ request()->routeIs('presensi.*') ?'active':'' }}">
 Presensi & Sikap
 </a>
 
-<a href="{{ route('laporan') }}"
+<a href="{{ route('laporan.index') }}"
 class="{{ request()->routeIs('laporan') ?'active':'' }}">
 Rekap Nilai
 </a>
