@@ -11,6 +11,7 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PresensiSikapController;
+use App\Http\Controllers\RaporController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,8 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     Route::resource('siswa', SiswaController::class);
     Route::resource('kelas', KelasController::class);
     Route::resource('mapel', MapelController::class);
+    Route::resource('rapor', RaporController::class);
+    Route::get('/rapor/{id}/pdf',[RaporController::class,'pdf'])->name('rapor.pdf');
     
 
     Route::get('/guru/{id}/penugasan',[GuruController::class,'penugasan'])->name('guru.penugasan');
