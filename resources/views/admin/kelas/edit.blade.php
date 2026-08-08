@@ -4,40 +4,98 @@
 
 <div class="container">
 
-<h3>Edit Data Kelas</h3>
+    <div class="card shadow">
 
-<form action="{{ route('kelas.update',$data->id) }}" method="POST">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Edit Data Kelas</h4>
+        </div>
 
-@csrf
-@method('PUT')
+        <div class="card-body">
 
-<div class="mb-3">
+            {{-- Error Validasi --}}
+            @if($errors->any())
 
-<label>Nama Kelas</label>
+                <div class="alert alert-danger">
 
-<input
-type="text"
-name="nama_kelas"
-class="form-control"
-value="{{ $data->nama_kelas }}"
-required>
+                    <strong>Terjadi kesalahan:</strong>
 
-</div>
+                    <ul class="mb-0 mt-2">
 
-<button class="btn btn-success">
+                        @foreach($errors->all() as $error)
 
-Update
+                            <li>{{ $error }}</li>
 
-</button>
+                        @endforeach
 
-<a href="{{ route('kelas.index') }}"
-class="btn btn-secondary">
+                    </ul>
 
-Kembali
+                </div>
 
-</a>
+            @endif
 
-</form>
+
+            <form
+                action="{{ route('kelas.update', $data->id) }}"
+                method="POST"
+            >
+
+                @csrf
+                @method('PUT')
+
+
+                {{-- Nama Kelas --}}
+                <div class="mb-3">
+
+                    <label
+                        for="nama_kelas"
+                        class="form-label"
+                    >
+                        Nama Kelas
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nama_kelas"
+                        id="nama_kelas"
+                        class="form-control @error('nama_kelas') is-invalid @enderror"
+                        value="{{ old('nama_kelas', $data->nama_kelas) }}"
+                        required
+                    >
+
+                    @error('nama_kelas')
+
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+
+                    @enderror
+
+                </div>
+
+
+                {{-- Tombol --}}
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    <i class="fas fa-save me-1"></i>
+                    Update
+                </button>
+
+
+                <a
+                    href="{{ route('kelas.index') }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Kembali
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 

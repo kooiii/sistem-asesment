@@ -4,38 +4,98 @@
 
 <div class="container">
 
-<h3>Tambah Data Kelas</h3>
+    <div class="card shadow">
 
-<form action="{{ route('kelas.store') }}" method="POST">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Tambah Data Kelas</h4>
+        </div>
 
-@csrf
+        <div class="card-body">
 
-<div class="mb-3">
+            {{-- Error Validasi --}}
+            @if($errors->any())
 
-<label>Nama Kelas</label>
+                <div class="alert alert-danger">
 
-<input
-type="text"
-name="nama_kelas"
-class="form-control"
-required>
+                    <strong>Terjadi kesalahan:</strong>
 
-</div>
+                    <ul class="mb-0 mt-2">
 
-<button class="btn btn-primary">
+                        @foreach($errors->all() as $error)
 
-Simpan
+                            <li>{{ $error }}</li>
 
-</button>
+                        @endforeach
 
-<a href="{{ route('kelas.index') }}"
-class="btn btn-secondary">
+                    </ul>
 
-Kembali
+                </div>
 
-</a>
+            @endif
 
-</form>
+
+            <form
+                action="{{ route('kelas.store') }}"
+                method="POST"
+            >
+
+                @csrf
+
+
+                {{-- Nama Kelas --}}
+                <div class="mb-3">
+
+                    <label
+                        for="nama_kelas"
+                        class="form-label"
+                    >
+                        Nama Kelas
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nama_kelas"
+                        id="nama_kelas"
+                        class="form-control @error('nama_kelas') is-invalid @enderror"
+                        value="{{ old('nama_kelas') }}"
+                        placeholder="Contoh: X MPLB"
+                        required
+                    >
+
+                    @error('nama_kelas')
+
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+
+                    @enderror
+
+                </div>
+
+
+                {{-- Tombol --}}
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <i class="fas fa-save me-1"></i>
+                    Simpan
+                </button>
+
+
+                <a
+                    href="{{ route('kelas.index') }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Kembali
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 

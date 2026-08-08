@@ -13,38 +13,45 @@ class TujuanPembelajaranController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $kelasAktif = session('kelas_aktif');
+    {
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
 
-    $mapelAktif = session('mapel_aktif');
+        $kelasAktifId = session('kelas_aktif');
+        $mapelAktifId = session('mapel_aktif');
 
-    $guru = Guru::with([
-        'kelas',
-        'mapel'
-    ])->findOrFail(session('id'));
+        if (!$guru->kelas->pluck('id')->contains($kelasAktifId)) {
+            abort(403);
+        }
 
-    $data = TujuanPembelajaran::where(
-            'kelas_id',
-            $kelasAktif
-        )
-        ->where(
-            'mapel_id',
-            $mapelAktif
-        )
-        ->orderBy('nomor_tp')
-        ->get();
+        if (!$guru->mapel->pluck('id')->contains($mapelAktifId)) {
+            abort(403);
+        }
 
-    $nomorTP = $data->count() + 1;
+        $kelasAktif = $guru->kelas
+            ->where('id', $kelasAktifId)
+            ->first();
 
-    return view(
-        'tujuan_pembelajaran.create',
-        compact(
-            'guru',
-            'data',
-            'nomorTP'
-        )
-    );
-}
+        $data = TujuanPembelajaran::where('guru_id', $guru->id)
+            ->where('kelas_id', $kelasAktifId)
+            ->where('mapel_id', $mapelAktifId)
+            ->orderBy('nomor_tp')
+            ->get();
+
+        $nomorTP = $data->count() + 1;
+
+        return view(
+            'tujuan_pembelajaran.create',
+            compact(
+                'guru',
+                'kelasAktif',
+                'data',
+                'nomorTP'
+            )
+        );
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -58,49 +65,55 @@ class TujuanPembelajaranController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $request->validate([
+    {
+        $request->validate([
+            'nomor_tp' => 'required|integer|min:1',
+            'judul_tp' => 'required|string|max:255'
+        ]);
 
-        'nomor_tp'=>'required|integer|min:1',
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
 
-        'judul_tp'=>'required'
+        $kelasAktif = session('kelas_aktif');
+        $mapelAktif = session('mapel_aktif');
 
-    ]);
+        if (!$guru->kelas->pluck('id')->contains($kelasAktif)) {
+            abort(403);
+        }
 
-    $guru = Guru::with([
-        'kelas',
-        'mapel'
-    ])->findOrFail(session('id'));
+        if (!$guru->mapel->pluck('id')->contains($mapelAktif)) {
+            abort(403);
+        }
 
-    $kelasAktif = session('kelas_aktif');
+        $tahunAjaran = TahunAjaran::where('aktif', true)->first();
 
-    $mapelAktif = session('mapel_aktif');
+        if (!$tahunAjaran) {
+            return back()->with(
+                'error',
+                'Belum ada Tahun Ajaran yang aktif.'
+            );
+        }
 
-    if(!$guru->kelas->pluck('id')->contains($kelasAktif)){
-        abort(403);
+        TujuanPembelajaran::create([
+
+            'guru_id'   => $guru->id,
+            'kelas_id'  => $kelasAktif,
+            'mapel_id'  => $mapelAktif,
+            'tahun_ajaran_id' => $tahunAjaran->id,
+            'nomor_tp'  => $request->nomor_tp,
+            'judul_tp'  => $request->judul_tp
+
+        ]);
+
+        return redirect()
+            ->route('tujuan-pembelajaran.index')
+            ->with(
+                'success',
+                'Tujuan Pembelajaran berhasil ditambahkan.'
+            );
     }
-
-    if(!$guru->mapel->pluck('id')->contains($mapelAktif)){
-        abort(403);
-    }
-
-    TujuanPembelajaran::create([
-
-        'kelas_id'=>$kelasAktif,
-
-        'mapel_id'=>$mapelAktif,
-
-        'nomor_tp'=>$request->nomor_tp,
-
-        'judul_tp'=>$request->judul_tp
-
-    ]);
-
-    return back()->with(
-        'success',
-        'TP berhasil ditambahkan.'
-    );
-}
 
     /**
      * Display the specified resource.
@@ -115,7 +128,24 @@ class TujuanPembelajaranController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $guru = Guru::with([
+            'kelas',
+            'mapel'
+        ])->findOrFail(session('id'));
+
+        $tp = TujuanPembelajaran::findOrFail($id);
+
+        if ($tp->guru_id != $guru->id) {
+            abort(403);
+        }
+
+        return view(
+            'tujuan_pembelajaran.edit',
+            compact(
+                'tp',
+                'guru'
+            )
+        );
     }
 
     /**
@@ -123,7 +153,33 @@ class TujuanPembelajaranController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nomor_tp' => 'required|integer|min:1',
+            'judul_tp' => 'required|string|max:255'
+        ]);
+
+        $guru = Guru::findOrFail(session('id'));
+
+        $tp = TujuanPembelajaran::findOrFail($id);
+
+        if ($tp->guru_id != $guru->id) {
+            abort(403);
+        }
+
+        $tp->update([
+
+            'nomor_tp' => $request->nomor_tp,
+
+            'judul_tp' => $request->judul_tp
+
+        ]);
+
+        return redirect()
+            ->route('tujuan-pembelajaran.index')
+            ->with(
+                'success',
+                'Tujuan Pembelajaran berhasil diperbarui.'
+            );
     }
 
     /**
@@ -131,6 +187,21 @@ class TujuanPembelajaranController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $guru = Guru::findOrFail(session('id'));
+
+        $tp = TujuanPembelajaran::findOrFail($id);
+
+        if ($tp->guru_id != $guru->id) {
+            abort(403);
+        }
+
+        $tp->delete();
+
+        return redirect()
+            ->route('tujuan-pembelajaran.index')
+            ->with(
+                'success',
+                'Tujuan Pembelajaran berhasil dihapus.'
+            );
     }
 }

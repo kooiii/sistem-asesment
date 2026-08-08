@@ -2,194 +2,162 @@
 
 @section('content')
 
+<div class="container">
+
+@if(session('success'))
+
+<div class="alert alert-success">
+
+{{ session('success') }}
+
+</div>
+
+@endif
+
+@if(session('error'))
+
+<div class="alert alert-danger">
+
+{{ session('error') }}
+
+</div>
+
+@endif
+
 <div class="card shadow">
 
-    <div class="card-header bg-primary text-white">
+<div class="card-header bg-primary text-white">
 
-        <h4>
+<h4>
 
-            Input Nilai {{ $jenis }}
+Penilaian Sumatif
 
-        </h4>
+{{ $jenis }}
 
-    </div>
+</h4>
 
-    <div class="card-body">
+</div>
 
-        @if(session('error'))
+<div class="card-body">
 
-        <div class="alert alert-danger">
+<form
 
-            {{ session('error') }}
+action="{{ route('nilai-sumatif.store') }}"
 
-        </div>
+method="POST">
 
-        @endif
+@csrf
 
-        <form action="{{ route('nilai-sumatif.store') }}" method="POST">
+<input
+type="hidden"
+name="jenis"
+value="{{ $jenis }}">
 
-            @csrf
+<table class="table table-bordered table-hover">
 
-            <div class="row mb-4">
+<thead class="table-primary">
 
-                <div class="col-md-4">
+<tr>
 
-                    <label>Kelas</label>
+<th width="60">
 
-                    <select
-                        name="kelas"
-                        class="form-control"
-                        onchange="location='?kelas='+this.value+'&jenis={{ $jenis }}'">
+No
 
-                        <option value="">Pilih Kelas</option>
+</th>
 
-                        @foreach($guru->kelas as $kelas)
+<th>
 
-                        <option
-                            value="{{ $kelas->id }}"
-                            {{ $kelasDipilih==$kelas->id?'selected':'' }}>
+Nama Siswa
 
-                            {{ $kelas->nama_kelas }}
+</th>
 
-                        </option>
+<th width="180">
 
-                        @endforeach
+Nilai
 
-                    </select>
+</th>
 
-                </div>
+</tr>
 
-                <div class="col-md-4">
+</thead>
 
-                    <label>Mata Pelajaran</label>
+<tbody>
 
-                    <select
-                        name="mapel_id"
-                        class="form-control"
-                        onchange="location='?kelas={{ $kelasDipilih }}&mapel_id='+this.value+'&jenis={{ $jenis }}'"
-                        required>
+@foreach($siswas as $siswa)
 
-                        @foreach($guru->mapel as $mapel)
-                            <option
-                            value="{{ $mapel->id }}"
-                            {{ $mapelDipilih==$mapel->id ? 'selected' : '' }}>
-                            {{ $mapel->nama_mapel }}
-                            </option>
-                        @endforeach
+<tr>
 
-                    </select>
+<td>
 
-                </div>
+{{ $loop->iteration }}
 
-                <div class="col-md-4">
+</td>
 
-                    <label>Jenis Sumatif</label>
-                    <select
-                        name="jenis"
-                        class="form-control">
+<td>
 
-                        <option
-                            value="STS"
-                            {{ $jenis=='STS'?'selected':'' }}>
-                            STS
-                        </option>
+{{ $siswa->nama }}
 
-                        <option
-                            value="SAS"
-                            {{ $jenis=='SAS'?'selected':'' }}>
-                            SAS
-                        </option>
+<input
 
-                    </select>
+type="hidden"
 
-                </div>
+name="siswa_id[]"
 
-            </div>
+value="{{ $siswa->id }}">
 
-            <table class="table table-bordered table-hover">
+</td>
 
-                <thead class="table-primary">
+<td>
 
-                    <tr>
+<input
 
-                        <th width="60">No</th>
+type="number"
 
-                        <th>Nama Siswa</th>
+name="nilai[]"
 
-                        <th width="150">Nilai</th>
+class="form-control nilai"
 
-                    </tr>
+min="0"
 
-                </thead>
+max="100"
 
-                <tbody>
+value="{{ optional($siswa->nilaiSumatif->first())->nilai }}">
 
-                    @forelse($siswas as $siswa)
+</td>
 
-                    <tr>
+</tr>
 
-                        <td>
-                            {{ $loop->iteration }}
-                        </td>
+@endforeach
 
-                        <td>
-                            {{ $siswa->nama }}
-                            <input
-                                type="hidden"
-                                name="siswa_id[]"
-                                value="{{ $siswa->id }}">
-                        </td>
+</tbody>
 
-                        <td>
-                            <input
-                                type="number"
-                                name="nilai[]"
-                                class="form-control"
-                                min="0"
-                                max="100"
-                                value="{{ optional($siswa->nilaiSumatif->first())->nilai }}"
-                                required>
-                        </td>
+</table>
 
-                    </tr>
+<button
 
-                    @empty
+class="btn btn-success">
 
-                    <tr>
+<i class="fa fa-save"></i>
 
-                        <td colspan="3" class="text-center">
+Simpan
 
-                            Pilih kelas terlebih dahulu.
+</button>
 
-                        </td>
+<a
 
-                    </tr>
+href="{{ route('nilai-sumatif.index',['jenis'=>$jenis]) }}"
 
-                    @endforelse
+class="btn btn-secondary">
 
-                </tbody>
+Kembali
 
-            </table>
+</a>
 
-            <button class="btn btn-success">
+</form>
 
-                <i class="fa fa-save"></i>
+</div>
 
-                Simpan Nilai
-
-            </button>
-
-            <a
-                href="{{ route('nilai-sumatif.index') }}"
-                class="btn btn-secondary">
-
-                Kembali
-
-            </a>
-
-        </form>
-
-    </div>
+</div>
 
 </div>
 

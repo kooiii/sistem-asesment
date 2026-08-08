@@ -7,32 +7,29 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
-     */
+         * Run the migrations.
+              */
     public function up(): void
-{
-    Schema::create('tujuan_pembelajarans', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('tujuan_pembelajarans', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('guru_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('kelas_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('mapel_id')->constrained()->cascadeOnDelete();
+            $table->integer('nomor_tp');
+            $table->string('judul_tp');
 
-        $table->foreignId('guru_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('kelas_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('mapel_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('tahun_ajaran_id')
+            ->constrained()
+            ->cascadeOnDelete();
 
-        $table->integer('nomor_tp');
-        $table->string('judul_tp');
+            $table->timestamps();
+           });
+        }
 
-        $table->enum('semester', ['Ganjil', 'Genap']);
-        $table->string('tahun_ajaran');
-
-        $table->timestamps();
-    });
-}
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tujuan_pembelajarans');
     }
+   
 };

@@ -53,36 +53,29 @@ class NilaiSumatifController extends Controller
         $mapelAktif = session('mapel_aktif');
 
         $jenis = $request->jenis ?? 'STS';
-        $tahun = TahunAjaran::where('aktif',true)->first();
 
-        $siswas = Siswa::where(
-            'kelas_id',
-            $kelasAktif
-        )
+        $tahun = TahunAjaran::where('aktif', true)->first();
 
-        ->with(['nilaiSumatif'=>function($q)
-            use($mapelAktif,$jenis,$tahun){
-                $q->where(
-                    'mapel_id',
-                    $mapelAktif
-                )
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
 
-                ->where(
-                    'jenis',
-                    $jenis
-                )
+        $siswas = Siswa::where('kelas_id', $kelasAktif)
+            ->with([
+                'nilaiSumatif' => function ($q) use ($mapelAktif, $jenis, $tahun) {
+                    $q->where('mapel_id', $mapelAktif)
+                    ->where('jenis', $jenis)
+                    ->where('tahun_ajaran_id', $tahun->id);
+                }
+            ])
+            ->orderBy('nama')
+            ->get();
 
-                ->where(
-                    'tahun_ajaran_id',
-                    $tahun->id
-                );
-            }
-        ])
-
-        ->orderBy('nama')
-        ->get();
-
-        return view('nilai_sumatif.create',
+        return view(
+            'nilai_sumatif.create',
             compact(
                 'siswas',
                 'jenis'

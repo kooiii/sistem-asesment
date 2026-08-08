@@ -160,6 +160,7 @@ class LaporanController extends Controller
         'tahun'
     )
 );
+}
 
     public function exportPdf()
 {
@@ -294,5 +295,4 @@ class LaporanController extends Controller
 
     return $pdf->download('Laporan Nilai.pdf');
 }
-}
-}
+};

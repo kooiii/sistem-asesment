@@ -4,85 +4,158 @@
 
 <div class="container">
 
-<div class="d-flex justify-content-between mb-3">
+    <div class="card shadow">
 
-    <h3>Data Kelas</h3>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Data Kelas</h4>
+        </div>
 
-    <a href="{{ route('kelas.create') }}" class="btn btn-primary">
-        + Tambah Kelas
-    </a>
+        <div class="card-body">
 
-</div>
+            {{-- Notifikasi berhasil --}}
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
 
-@if(session('success'))
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+                </div>
+            @endif
 
-<div class="alert alert-success">
+            {{-- Notifikasi error --}}
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
 
-{{ session('success') }}
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+                </div>
+            @endif
 
-</div>
+            {{-- Error validasi --}}
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Terjadi kesalahan:</strong>
 
-@endif
+                    <ul class="mb-0 mt-2">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-<table class="table table-bordered table-striped">
+            {{-- Tombol tambah --}}
+            <div class="mb-3">
+                <a
+                    href="{{ route('kelas.create') }}"
+                    class="btn btn-primary"
+                >
+                    + Tambah Kelas
+                </a>
+            </div>
 
-<thead class="table-dark">
+            {{-- Tabel kelas --}}
+            <div class="table-responsive">
 
-<tr>
+                <table class="table table-bordered table-hover">
 
-<th width="70">No</th>
-<th>Nama Kelas</th>
-<th width="170">Aksi</th>
+                    <thead class="table-primary">
 
-</tr>
+                        <tr>
+                            <th width="70">No</th>
+                            <th>Nama Kelas</th>
+                            <th width="220">Aksi</th>
+                        </tr>
 
-</thead>
+                    </thead>
 
-<tbody>
+                    <tbody>
 
-@foreach($data as $d)
+                        @forelse($data as $d)
 
-<tr>
+                            <tr>
 
-<td>{{ $loop->iteration }}</td>
+                                <td>
+                                    {{ $loop->iteration }}
+                                </td>
 
-<td>{{ $d->nama_kelas }}</td>
+                                <td>
+                                    {{ $d->nama_kelas }}
+                                </td>
 
-<td>
+                                <td>
 
-<a href="{{ route('kelas.edit',$d->id) }}"
-class="btn btn-warning btn-sm">
+                                    {{-- Tombol Edit --}}
+                                    <a
+                                        href="{{ route('kelas.edit', $d->id) }}"
+                                        class="btn btn-warning btn-sm"
+                                    >
+                                        Edit
+                                    </a>
 
-<i class="fa fa-edit"></i>
+                                    {{-- Tombol Hapus --}}
+                                    <form
+                                        action="{{ route('kelas.destroy', $d->id) }}"
+                                        method="POST"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus data kelas ini?')"
+                                    >
 
-</a>
+                                        @csrf
+                                        @method('DELETE')
 
-<form action="{{ route('kelas.destroy',$d->id) }}"
-method="POST"
-style="display:inline;">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                        >
+                                            Hapus
+                                        </button>
 
-@csrf
-@method('DELETE')
+                                    </form>
 
-<button
-class="btn btn-danger btn-sm"
-onclick="return confirm('Hapus data?')">
+                                </td>
 
-<i class="fa fa-trash"></i>
+                            </tr>
 
-</button>
+                        @empty
 
-</form>
+                            <tr>
+                                <td
+                                    colspan="3"
+                                    class="text-center"
+                                >
+                                    Data kelas belum tersedia.
+                                </td>
+                            </tr>
 
-</td>
+                        @endforelse
 
-</tr>
+                    </tbody>
 
-@endforeach
+                </table>
 
-</tbody>
+            </div>
 
-</table>
+            {{-- Tombol kembali --}}
+            <a
+                href="{{ url('/dashboard') }}"
+                class="btn btn-secondary"
+            >
+                Kembali
+            </a>
+
+        </div>
+
+    </div>
 
 </div>
 
