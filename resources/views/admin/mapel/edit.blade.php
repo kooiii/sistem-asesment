@@ -4,40 +4,96 @@
 
 <div class="container">
 
-<h3>Edit Mata Pelajaran</h3>
+    <div class="card shadow">
 
-<form action="{{ route('mapel.update',$data->id) }}" method="POST">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Edit Mata Pelajaran</h4>
+        </div>
 
-@csrf
-@method('PUT')
+        <div class="card-body">
 
-<div class="mb-3">
+            {{-- Error Validasi --}}
+            @if($errors->any())
 
-<label>Nama Mata Pelajaran</label>
+                <div class="alert alert-danger">
 
-<input
-type="text"
-name="nama_mapel"
-class="form-control"
-value="{{ $data->nama_mapel }}"
-required>
+                    <strong>Terjadi kesalahan:</strong>
 
-</div>
+                    <ul class="mb-0 mt-2">
 
-<button class="btn btn-success">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
 
-Update
+                    </ul>
 
-</button>
+                </div>
 
-<a href="{{ route('mapel.index') }}"
-class="btn btn-secondary">
+            @endif
 
-Kembali
 
-</a>
+            <form
+                action="{{ route('mapel.update', $data->id) }}"
+                method="POST"
+            >
 
-</form>
+                @csrf
+                @method('PUT')
+
+
+                {{-- Nama Mata Pelajaran --}}
+                <div class="mb-3">
+
+                    <label
+                        for="nama_mapel"
+                        class="form-label"
+                    >
+                        Nama Mata Pelajaran
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nama_mapel"
+                        id="nama_mapel"
+                        class="form-control @error('nama_mapel') is-invalid @enderror"
+                        value="{{ old('nama_mapel', $data->nama_mapel) }}"
+                        required
+                    >
+
+                    @error('nama_mapel')
+
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+
+                    @enderror
+
+                </div>
+
+
+                {{-- Tombol --}}
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    <i class="fas fa-save me-1"></i>
+                    Update
+                </button>
+
+
+                <a
+                    href="{{ route('mapel.index') }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Kembali
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 

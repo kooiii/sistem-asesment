@@ -10,38 +10,42 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('nilai_formatifs', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('nilai_formatifs', function (Blueprint $table) {
 
-        $table->foreignId('siswa_id')->constrained()->cascadeOnDelete();
+            $table->id();
 
-        $table->foreignId('tp_id')
-              ->constrained('tujuan_pembelajarans')
-              ->cascadeOnDelete();
+            $table->foreignId('siswa_id')
+                  ->constrained()
+                  ->cascadeOnDelete();
 
-        $table->enum('teknik', [
-            'Tugas',
-            'Kuis',
-            'Praktik',
-            'Presentasi'
-        ]);
+            $table->foreignId('tp_id')
+                  ->constrained('tujuan_pembelajarans')
+                  ->cascadeOnDelete();
 
-        $table->decimal('nilai',5,2);
+            $table->foreignId('tahun_ajaran_id')
+                  ->constrained('tahun_ajarans')
+                  ->cascadeOnDelete();
 
-        $table->unique([
-        'tp_id',
-        'siswa_id',
-        'teknik'
-        ]);
-        
-        $table->foreignId('tahun_ajaran_id')
-        ->constrained('tahun_ajarans')
-        ->cascadeOnDelete();
+            $table->enum('teknik', [
+                'Tugas',
+                'Kuis',
+                'Praktik',
+                'Presentasi'
+            ]);
 
-        $table->timestamps();
-    });
-}
+            $table->decimal('nilai', 5, 2);
+
+            $table->unique([
+                'tp_id',
+                'siswa_id',
+                'teknik',
+                'tahun_ajaran_id'
+            ]);
+
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

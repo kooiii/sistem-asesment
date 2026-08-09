@@ -39,6 +39,9 @@ class NilaiFormatifController extends Controller
     | Validasi Context Guru
     |--------------------------------------------------------------------------
     */
+    if($tp->guru_id != $guru->id){
+        abort(403);
+    }
 
     if($tp->kelas_id != session('kelas_aktif')){
         abort(403);
@@ -139,13 +142,22 @@ class NilaiFormatifController extends Controller
     public function store(Request $request)
 {
     $request->validate([
-
         'tp_id' => 'required|exists:tujuan_pembelajarans,id',
 
         'siswa_id' => 'required|array',
+        'siswa_id.*' => 'exists:siswas,id',
 
-        'siswa_id.*' => 'exists:siswas,id'
+        'tugas' => 'nullable|array',
+        'tugas.*' => 'nullable|numeric|min:0|max:100',
 
+        'kuis' => 'nullable|array',
+        'kuis.*' => 'nullable|numeric|min:0|max:100',
+
+        'praktik' => 'nullable|array',
+        'praktik.*' => 'nullable|numeric|min:0|max:100',
+
+        'presentasi' => 'nullable|array',
+        'presentasi.*' => 'nullable|numeric|min:0|max:100',
     ]);
 
     $guru = Guru::with([
@@ -160,6 +172,9 @@ class NilaiFormatifController extends Controller
     | Validasi Context Guru
     |--------------------------------------------------------------------------
     */
+    if($tp->guru_id != $guru->id){
+        abort(403);
+    }
 
     if($tp->kelas_id != session('kelas_aktif')){
         abort(403);

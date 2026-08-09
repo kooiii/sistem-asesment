@@ -2,267 +2,330 @@
 
 @section('content')
 
-<div class="card shadow">
+<div class="container">
 
-<div class="card-header bg-success text-white">
+    <div class="card shadow">
 
-<h4>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Penilaian Formatif
+            </h4>
+        </div>
 
-TP {{ $tp->nomor_tp }}
+        <div class="card-body">
 
--
+            {{-- INFORMASI TP --}}
+            <div class="mb-4">
 
-{{ $tp->judul_tp }}
+                <h5>
+                    TP {{ $tp->nomor_tp }} -
+                    {{ $tp->judul_tp }}
+                </h5>
 
-</h4>
+                <p class="mb-0">
+                    <strong>Kelas:</strong>
+                    {{ $tp->kelas->nama_kelas }}
+                </p>
 
-<small>
+                <p>
+                    <strong>Mata Pelajaran:</strong>
+                    {{ $tp->mapel->nama_mapel }}
+                </p>
 
-{{ $tp->kelas->nama_kelas }}
+            </div>
 
-|
+            {{-- PESAN SUCCESS --}}
+            @if(session('success'))
 
-{{ $tp->mapel->nama_mapel }}
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
 
-</small>
+            @endif
+
+            {{-- PESAN ERROR --}}
+            @if(session('error'))
+
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+
+            @endif
+
+            {{-- VALIDASI ERROR --}}
+            @if($errors->any())
+
+                <div class="alert alert-danger">
+
+                    <ul class="mb-0">
+
+                        @foreach($errors->all() as $error)
+
+                            <li>{{ $error }}</li>
+
+                        @endforeach
+
+                    </ul>
+
+                </div>
+
+            @endif
+
+
+            {{-- FORM NILAI --}}
+            <form
+                action="{{ route('nilai-formatif.store') }}"
+                method="POST">
+
+                @csrf
+
+                <input
+                    type="hidden"
+                    name="tp_id"
+                    value="{{ $tp->id }}">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover align-middle">
+
+                        <thead class="table-primary">
+
+                            <tr>
+
+                                <th width="50">
+                                    No
+                                </th>
+
+                                <th>
+                                    Nama Siswa
+                                </th>
+
+                                <th width="120">
+                                    Tugas
+                                </th>
+
+                                <th width="120">
+                                    Kuis
+                                </th>
+
+                                <th width="120">
+                                    Praktik
+                                </th>
+
+                                <th width="120">
+                                    Presentasi
+                                </th>
+
+                                <th width="120">
+                                    Rata-rata
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @forelse($siswas as $siswa)
+
+                                <tr>
+
+                                    <td>
+                                        {{ $loop->iteration }}
+                                    </td>
+
+                                    <td>
+
+                                        {{ $siswa->nama }}
+
+                                        <input
+                                            type="hidden"
+                                            name="siswa_id[]"
+                                            value="{{ $siswa->id }}">
+
+                                    </td>
+
+                                    {{-- TUGAS --}}
+                                    <td>
+
+                                        <input
+                                            type="number"
+                                            name="tugas[]"
+                                            class="form-control nilai-input"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ $siswa->tugas }}">
+
+                                    </td>
+
+                                    {{-- KUIS --}}
+                                    <td>
+
+                                        <input
+                                            type="number"
+                                            name="kuis[]"
+                                            class="form-control nilai-input"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ $siswa->kuis }}">
+
+                                    </td>
+
+                                    {{-- PRAKTIK --}}
+                                    <td>
+
+                                        <input
+                                            type="number"
+                                            name="praktik[]"
+                                            class="form-control nilai-input"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ $siswa->praktik }}">
+
+                                    </td>
+
+                                    {{-- PRESENTASI --}}
+                                    <td>
+
+                                        <input
+                                            type="number"
+                                            name="presentasi[]"
+                                            class="form-control nilai-input"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ $siswa->presentasi }}">
+
+                                    </td>
+
+                                    {{-- RATA-RATA --}}
+                                    <td>
+
+                                        <span class="rata-rata">
+                                            {{ $siswa->rata ?? '-' }}
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td
+                                        colspan="7"
+                                        class="text-center">
+
+                                        Belum ada siswa pada kelas ini.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                @if($siswas->count() > 0)
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        <i class="fa fa-save"></i>
+                        Simpan Semua
+
+                    </button>
+
+                @endif
+
+                <a
+                    href="{{ route('tujuan-pembelajaran.index') }}"
+                    class="btn btn-secondary">
+
+                    Kembali
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 
-<div class="card-body">
 
-<form action="{{ route('nilai-formatif.store') }}"
-
-method="POST">
-
-@csrf
-
-<input type="hidden"
-
-name="tp_id"
-
-value="{{ $tp->id }}">
-
-<table class="table table-bordered table-hover">
-
-<thead class="table-success">
-
-<tr>
-
-<th>No</th>
-
-<th>Nama Siswa</th>
-
-<th width="90">
-
-Tugas
-
-</th>
-
-<th width="90">
-
-Kuis
-
-</th>
-
-<th width="90">
-
-Praktik
-
-</th>
-
-<th width="110">
-
-Presentasi
-
-</th>
-
-<th width="90">
-
-Rata-rata
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-@foreach($siswas as $siswa)
-
-<tr>
-
-<td>
-
-{{ $loop->iteration }}
-
-</td>
-
-<td>
-
-{{ $siswa->nama }}
-
-<input
-
-type="hidden"
-
-name="siswa_id[]"
-
-value="{{ $siswa->id }}">
-
-</td>
-
-<td>
-
-<input
-type="number"
-name="tugas[]"
-class="form-control nilai"
-min="0"
-max="100"
-value="{{ $siswa->tugas }}">
-
-</td>
-
-<td>
-
-<input
-type="number"
-name="kuis[]"
-class="form-control nilai"
-min="0"
-max="100"
-value="{{ $siswa->kuis }}">
-
-</td>
-
-<td>
-
-<input
-type="number"
-name="praktik[]"
-class="form-control nilai"
-min="0"
-max="100"
-value="{{ $siswa->praktik }}">
-
-</td>
-
-<td>
-
-<input
-type="number"
-name="presentasi[]"
-class="form-control nilai"
-min="0"
-max="100"
-value="{{ $siswa->presentasi }}">
-
-</td>
-
-<td>
-
-<strong class="rata">
-
-{{ $siswa->rata ?? '-' }}
-
-</strong>
-
-</td>
-
-</tr>
-
-@endforeach
-
-</tbody>
-
-</table>
-
-<button class="btn btn-success">
-
-<i class="fa fa-save"></i>Simpan Semua</button>
-
-<a href="{{ route('tujuan-pembelajaran.index') }}"
-class="btn btn-secondary">Kembali</a>
-
-</form>
-
-</div>
-
-</div>
-
-@endsection
-
+{{-- JAVASCRIPT RATA-RATA --}}
 @push('scripts')
 
 <script>
 
-document.querySelectorAll("tbody tr").forEach(function(row){
+document.addEventListener('DOMContentLoaded', function () {
 
-    function hitung(){
+    const rows = document.querySelectorAll('tbody tr');
 
-        let total = 0;
-        let jumlah = 0;
+    rows.forEach(function (row) {
 
-        row.querySelectorAll(".nilai").forEach(function(input){
+        const inputs = row.querySelectorAll('.nilai-input');
 
-            let v = parseFloat(input.value);
+        const rata = row.querySelector('.rata-rata');
 
-            if(!isNaN(v)){
+        function hitungRataRata() {
 
-                total += v;
-                jumlah++;
+            let total = 0;
+            let jumlah = 0;
+
+            inputs.forEach(function (input) {
+
+                if (input.value !== '') {
+
+                    total += parseFloat(input.value);
+                    jumlah++;
+
+                }
+
+            });
+
+            if (jumlah > 0) {
+
+                rata.textContent =
+                    (total / jumlah).toFixed(2);
+
+            } else {
+
+                rata.textContent = '-';
 
             }
 
+        }
+
+        inputs.forEach(function (input) {
+
+            input.addEventListener(
+                'input',
+                hitungRataRata
+            );
+
         });
 
-        let rataCell = row.querySelector(".rata");
-
-        if(jumlah == 0){
-
-            rataCell.innerHTML = "-";
-            rataCell.className = "rata";
-            return;
-
-        }
-
-        let rata = (total / jumlah).toFixed(2);
-
-        rataCell.innerHTML = rata;
-        rataCell.className = "rata";
-
-        if(rata >= 90){
-
-            rataCell.classList.add("text-success");
-
-        }else if(rata >= 80){
-
-            rataCell.classList.add("text-primary");
-
-        }else if(rata >= 70){
-
-            rataCell.classList.add("text-warning");
-
-        }else{
-
-            rataCell.classList.add("text-danger");
-
-        }
-
-    }
-
-    row.querySelectorAll(".nilai").forEach(function(input){
-
-        input.addEventListener("keyup", hitung);
-        input.addEventListener("change", hitung);
+        hitungRataRata();
 
     });
-
-    hitung();
 
 });
 
 </script>
 
 @endpush
+
+@endsection

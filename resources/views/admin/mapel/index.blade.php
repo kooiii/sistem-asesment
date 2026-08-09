@@ -4,87 +4,166 @@
 
 <div class="container">
 
-<div class="d-flex justify-content-between mb-3">
+    <div class="card shadow">
 
-<h3>Data Mata Pelajaran</h3>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Data Mata Pelajaran</h4>
+        </div>
 
-<a href="{{ route('mapel.create') }}" class="btn btn-primary">
+        <div class="card-body">
 
-+ Tambah Mata Pelajaran
+            {{-- Notifikasi berhasil --}}
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
 
-</a>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+                </div>
+            @endif
 
-</div>
+            {{-- Notifikasi error --}}
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
 
-@if(session('success'))
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+                </div>
+            @endif
 
-<div class="alert alert-success">
+            {{-- Error validasi --}}
+            @if($errors->any())
+                <div class="alert alert-danger">
 
-{{ session('success') }}
+                    <strong>Terjadi kesalahan:</strong>
 
-</div>
+                    <ul class="mb-0 mt-2">
 
-@endif
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
 
-<table class="table table-bordered table-striped">
+                    </ul>
 
-<thead class="table-dark">
+                </div>
+            @endif
 
-<tr>
+            {{-- Tombol Tambah --}}
+            <div class="mb-3">
 
-<th width="70">No</th>
-<th>Nama Mata Pelajaran</th>
-<th width="170">Aksi</th>
+                <a
+                    href="{{ route('mapel.create') }}"
+                    class="btn btn-primary"
+                >
+                    + Tambah Mata Pelajaran
+                </a>
 
-</tr>
+            </div>
 
-</thead>
+            {{-- Tabel --}}
+            <div class="table-responsive">
 
-<tbody>
+                <table class="table table-bordered table-hover">
 
-@foreach($data as $d)
+                    <thead class="table-primary">
 
-<tr>
+                        <tr>
+                            <th width="70">No</th>
+                            <th>Nama Mata Pelajaran</th>
+                            <th width="220">Aksi</th>
+                        </tr>
 
-<td>{{ $loop->iteration }}</td>
+                    </thead>
 
-<td>{{ $d->nama_mapel }}</td>
+                    <tbody>
 
-<td>
+                        @forelse($data as $d)
 
-<a href="{{ route('mapel.edit',$d->id) }}"
-class="btn btn-warning btn-sm">
+                            <tr>
 
-<i class="fa fa-edit"></i>
+                                <td>
+                                    {{ $loop->iteration }}
+                                </td>
 
-</a>
+                                <td>
+                                    {{ $d->nama_mapel }}
+                                </td>
 
-<form action="{{ route('mapel.destroy',$d->id) }}"
-method="POST"
-style="display:inline">
+                                <td>
 
-@csrf
-@method('DELETE')
+                                    {{-- Edit --}}
+                                    <a
+                                        href="{{ route('mapel.edit', $d->id) }}"
+                                        class="btn btn-warning btn-sm"
+                                    >
+                                        Edit
+                                    </a>
 
-<button
-class="btn btn-danger btn-sm"
-onclick="return confirm('Hapus data ini?')">
+                                    {{-- Hapus --}}
+                                    <form
+                                        action="{{ route('mapel.destroy', $d->id) }}"
+                                        method="POST"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?')"
+                                    >
 
-<i class="fa fa-trash"></i>
+                                        @csrf
+                                        @method('DELETE')
 
-</button>
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                        >
+                                            Hapus
+                                        </button>
 
-</form>
+                                    </form>
 
-</td>
+                                </td>
 
-</tr>
+                            </tr>
 
-@endforeach
+                        @empty
 
-</tbody>
+                            <tr>
 
-</table>
+                                <td
+                                    colspan="3"
+                                    class="text-center"
+                                >
+                                    Data mata pelajaran belum tersedia.
+                                </td>
+
+                            </tr>
+
+                        @endforelse
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {{-- Kembali --}}
+            <a
+                href="{{ url('/dashboard') }}"
+                class="btn btn-secondary"
+            >
+                Kembali
+            </a>
+
+        </div>
+
+    </div>
 
 </div>
 

@@ -4,95 +4,193 @@
 
 <div class="container">
 
-<div class="card">
+    <div class="card shadow">
 
-<div class="card-header">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Atur Penugasan Guru
+            </h4>
+        </div>
 
-<h4>Atur Penugasan Guru</h4>
+        <div class="card-body">
 
-</div>
+            {{-- Informasi Guru --}}
+            <div class="alert alert-info">
 
-<div class="card-body">
+                <strong>Guru:</strong>
+                {{ $guru->nama }}
 
-<form method="POST"
-action="{{ route('guru.penugasan.simpan',$guru->id) }}">
+                <br>
 
-@csrf
+                <strong>NIP:</strong>
+                {{ $guru->nip }}
 
-<div class="mb-4">
+            </div>
 
-<label>Kelas Diampu</label>
 
-@foreach($kelas as $k)
+            {{-- Notifikasi berhasil --}}
+            @if(session('success'))
 
-<div class="form-check">
+                <div class="alert alert-success alert-dismissible fade show">
 
-<input
-class="form-check-input"
-type="checkbox"
-name="kelas[]"
-value="{{ $k->id }}"
-{{ $guru->kelas->contains($k->id) ? 'checked' : '' }}>
+                    {{ session('success') }}
 
-<label class="form-check-label">
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
 
-{{ $k->nama_kelas }}
+                </div>
 
-</label>
+            @endif
 
-</div>
 
-@endforeach
+            {{-- Error validasi --}}
+            @if($errors->any())
 
-</div>
+                <div class="alert alert-danger">
 
-<hr>
+                    <strong>Terjadi kesalahan:</strong>
 
-<div class="mb-4">
+                    <ul class="mb-0 mt-2">
 
-<label>Mata Pelajaran Diampu</label>
+                        @foreach($errors->all() as $error)
 
-@foreach($mapel as $m)
+                            <li>{{ $error }}</li>
 
-<div class="form-check">
+                        @endforeach
 
-<input
-class="form-check-input"
-type="checkbox"
-name="mapel[]"
-value="{{ $m->id }}"
-{{ $guru->mapel->contains($m->id) ? 'checked' : '' }}>
+                    </ul>
 
-<label class="form-check-label">
+                </div>
 
-{{ $m->nama_mapel }}
+            @endif
 
-</label>
 
-</div>
+            <form
+                method="POST"
+                action="{{ route('guru.penugasan.simpan', $guru->id) }}"
+            >
 
-@endforeach
+                @csrf
 
-</div>
 
-<button class="btn btn-primary">
+                {{-- KELAS --}}
+                <div class="mb-4">
 
-Simpan Penugasan
+                    <label class="form-label fw-bold">
+                        Kelas yang Diampu
+                    </label>
 
-</button>
+                    <div class="border rounded p-3">
 
-<a href="{{ route('guru.index') }}"
-class="btn btn-secondary">
+                        @forelse($kelas as $k)
 
-Kembali
+                            <div class="form-check mb-2">
 
-</a>
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="kelas[]"
+                                    value="{{ $k->id }}"
+                                    id="kelas_{{ $k->id }}"
+                                    {{ $guru->kelas->contains($k->id) ? 'checked' : '' }}
+                                >
 
-</form>
+                                <label
+                                    class="form-check-label"
+                                    for="kelas_{{ $k->id }}"
+                                >
+                                    {{ $k->nama_kelas }}
+                                </label>
 
-</div>
+                            </div>
 
-</div>
+                        @empty
+
+                            <p class="text-muted mb-0">
+                                Belum ada data kelas.
+                            </p>
+
+                        @endforelse
+
+                    </div>
+
+                </div>
+
+
+                <hr>
+
+
+                {{-- MATA PELAJARAN --}}
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        Mata Pelajaran yang Diampu
+                    </label>
+
+                    <div class="border rounded p-3">
+
+                        @forelse($mapel as $m)
+
+                            <div class="form-check mb-2">
+
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="mapel[]"
+                                    value="{{ $m->id }}"
+                                    id="mapel_{{ $m->id }}"
+                                    {{ $guru->mapel->contains($m->id) ? 'checked' : '' }}
+                                >
+
+                                <label
+                                    class="form-check-label"
+                                    for="mapel_{{ $m->id }}"
+                                >
+                                    {{ $m->nama_mapel }}
+                                </label>
+
+                            </div>
+
+                        @empty
+
+                            <p class="text-muted mb-0">
+                                Belum ada data mata pelajaran.
+                            </p>
+
+                        @endforelse
+
+                    </div>
+
+                </div>
+
+
+                {{-- TOMBOL --}}
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <i class="fas fa-save me-1"></i>
+                    Simpan Penugasan
+                </button>
+
+
+                <a
+                    href="{{ route('guru.index') }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Kembali
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 
