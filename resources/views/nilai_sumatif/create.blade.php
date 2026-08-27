@@ -24,6 +24,17 @@
 
 @endif
 
+@if($errors->any())
+    <div class="alert alert-danger">
+        <strong>Terjadi kesalahan:</strong>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="card shadow">
 
 <div class="card-header bg-primary text-white">
