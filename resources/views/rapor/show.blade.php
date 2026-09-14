@@ -148,7 +148,7 @@
 
             <td>
 
-                {{ $tahun->tahun }}
+                {{ $tahun->tahun_ajaran }}
 
             </td>
 

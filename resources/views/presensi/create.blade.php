@@ -68,15 +68,6 @@
 
                     </div>
 
-                    <div class="col-md-4">
-
-                        <strong>Mapel Aktif</strong>
-
-                        <br>
-
-                        {{ optional($guru->mapel->where('id',session('mapel_aktif'))->first())->nama_mapel }}
-
-                    </div>
 
                     <div class="col-md-4">
 

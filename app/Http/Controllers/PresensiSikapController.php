@@ -137,8 +137,10 @@ class PresensiSikapController extends Controller
             'siswa_id.*' => 'exists:siswas,id',
 
             'sikap' => 'required|array',
+            'sikap.*' => 'required|numeric|min:0|max:100',
 
-            'presensi' => 'required|array'
+            'presensi' => 'required|array',
+            'presensi.*' => 'required|numeric|min:0|max:100',
 
         ]);
 

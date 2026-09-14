@@ -90,15 +90,6 @@
 
                     </div>
 
-                    <div class="col-md-6">
-
-                        <strong>Mapel Aktif</strong>
-
-                        <br>
-
-                        {{ optional($guru->mapel->where('id',session('mapel_aktif'))->first())->nama_mapel }}
-
-                    </div>
 
                 </div>
 
@@ -176,38 +167,14 @@
 
                         <td class="text-center">
 
-                            @if($d->sikap>=90)
-
-                                <span class="badge bg-success">
-
-                                    SB
-
-                                </span>
-
-                            @elseif($d->sikap>=80)
-
-                                <span class="badge bg-primary">
-
-                                    B
-
-                                </span>
-
-                            @elseif($d->sikap>=70)
-
-                                <span class="badge bg-warning">
-
-                                    C
-
-                                </span>
-
+                            @if($d->predikat == 'SB')
+                                <span class="badge bg-success">SB</span>
+                            @elseif($d->predikat == 'B')
+                                <span class="badge bg-primary">B</span>
+                            @elseif($d->predikat == 'C')
+                                <span class="badge bg-warning">C</span>
                             @else
-
-                                <span class="badge bg-danger">
-
-                                    K
-
-                                </span>
-
+                                <span class="badge bg-danger">K</span>
                             @endif
 
                         </td>
