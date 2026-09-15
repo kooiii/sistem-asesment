@@ -1,362 +1,342 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+    <meta charset="utf-8">
 
-<meta charset="utf-8">
+    <title>Rapor Siswa</title>
 
-<title>Rapor</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #000;
+        }
 
-<style>
+        h2,
+        h3 {
+            text-align: center;
+            margin: 0;
+        }
 
-body{
+        p {
+            margin: 3px 0;
+        }
 
-    font-family: DejaVu Sans;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-    font-size:12px;
+        table,
+        th,
+        td {
+            border: 1px solid #000;
+        }
 
-}
+        th,
+        td {
+            padding: 8px;
+        }
 
-table{
+        th {
+            background: #f2f2f2;
+        }
 
-    width:100%;
+        .text-center {
+            text-align: center;
+        }
 
-    border-collapse:collapse;
+        .text-right {
+            text-align: right;
+        }
 
-    margin-top:10px;
+        .identitas {
+            border: none;
+            margin-top: 20px;
+        }
 
-}
+        .identitas td {
+            border: none;
+            padding: 4px;
+        }
 
-th,td{
+        .footer {
+            margin-top: 50px;
+            width: 100%;
+        }
 
-    border:1px solid #000;
-
-    padding:6px;
-
-}
-
-.text-center{
-
-    text-align:center;
-
-}
-
-.text-right{
-
-    text-align:right;
-
-}
-
-.no-border{
-
-    border:none;
-
-}
-
-.judul{
-
-    text-align:center;
-
-    font-size:18px;
-
-    font-weight:bold;
-
-    margin-bottom:5px;
-
-}
-
-.subjudul{
-
-    text-align:center;
-
-    margin-bottom:20px;
-
-}
-
-</style>
+        .footer td {
+            border: none;
+            text-align: center;
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="judul">
+    <h2>RAPOR HASIL BELAJAR</h2>
 
-LAPORAN HASIL BELAJAR PESERTA DIDIK
+    <h3>SMK NEGERI 1 SUNGAI TEBELIAN</h3>
 
-</div>
+    {{-- IDENTITAS SISWA --}}
+    <table class="identitas">
 
-<div class="subjudul">
+        <tr>
+            <td width="180">
+                Nama Siswa
+            </td>
 
-SMK NEGERI 1 SUNGAI TEBELIAN
+            <td width="10">:</td>
 
-</div>
+            <td>
+                {{ $siswa->nama }}
+            </td>
+        </tr>
 
-<table>
+        <tr>
+            <td>
+                Kelas
+            </td>
 
-<tr>
+            <td>:</td>
 
-<td width="25%">Nama Peserta Didik</td>
+            <td>
+                {{ $siswa->kelas->nama_kelas }}
+            </td>
+        </tr>
 
-<td width="2%">:</td>
+        <tr>
+            <td>
+                Mata Pelajaran
+            </td>
 
-<td>{{ $siswa->nama }}</td>
+            <td>:</td>
+
+            <td>
+                {{ $mapel->nama_mapel }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Guru Pengampu
+            </td>
+
+            <td>:</td>
+
+            <td>
+                {{ $guru->nama }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                Tahun Ajaran
+            </td>
+
+            <td>:</td>
+
+            <td>
+                {{ $tahun->tahun_ajaran }} - Semester {{ $tahun->semester }}
+            </td>
+        </tr>
+
+    </table>
 
-</tr>
+    {{-- NILAI --}}
+    <table>
 
-<tr>
+        <thead>
+            <tr>
+                <th width="60">
+                    No
+                </th>
+
+                <th>
+                    Komponen Penilaian
+                </th>
+
+                <th width="100">
+                    Bobot
+                </th>
 
-<td>Kelas</td>
+                <th width="100">
+                    Nilai
+                </th>
+            </tr>
+        </thead>
 
-<td>:</td>
+        <tbody>
 
-<td>{{ $siswa->kelas->nama_kelas }}</td>
+            <tr>
+                <td class="text-center">
+                    1
+                </td>
 
-</tr>
+                <td>
+                    Nilai Formatif
+                </td>
+
+                <td class="text-center">
+                    50%
+                </td>
+
+                <td class="text-center">
+                    {{ number_format($formatif, 2) }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="text-center">
+                    2
+                </td>
+
+                <td>
+                    Sumatif Tengah Semester (STS)
+                </td>
+
+                <td class="text-center">
+                    15%
+                </td>
+
+                <td class="text-center">
+                    {{ number_format($sts, 2) }}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="text-center">
+                    3
+                </td>
+
+                <td>
+                    Sumatif Akhir Semester (SAS)
+                </td>
 
-<tr>
+                <td class="text-center">
+                    20%
+                </td>
 
-<td>Mata Pelajaran</td>
+                <td class="text-center">
+                    {{ number_format($sas, 2) }}
+                </td>
+            </tr>
 
-<td>:</td>
+            <tr>
+                <td class="text-center">
+                    4
+                </td>
 
-<td>{{ $mapel->nama_mapel }}</td>
+                <td>
+                    Sikap &amp; Presensi
+                </td>
 
-</tr>
+                <td class="text-center">
+                    15%
+                </td>
 
-<tr>
+                <td class="text-center">
+                    {{ number_format($nilaiSikapPresensi, 2) }}
+                </td>
+            </tr>
 
-<td>Guru Pengampu</td>
+        </tbody>
 
-<td>:</td>
+        <tfoot>
 
-<td>{{ $guru->nama }}</td>
+            <tr>
+                <th colspan="3">
+                    Nilai Akhir
+                </th>
 
-</tr>
+                <th class="text-center">
+                    {{ number_format($nilaiAkhir, 2) }}
+                </th>
+            </tr>
 
-<tr>
+        </tfoot>
 
-<td>Tahun Ajaran</td>
+    </table>
 
-<td>:</td>
+    {{-- SIKAP, PRESENSI DAN PREDIKAT --}}
+    <table>
 
-<td>{{ $tahun->tahun }}</td>
+        <tr>
+            <th width="180">
+                Sikap
+            </th>
 
-</tr>
+            <td>
+                {{ $sikap->sikap ?? '-' }}
+            </td>
+        </tr>
 
-</table>
+        <tr>
+            <th>
+                Presensi
+            </th>
 
-<br>
+            <td>
+                {{ $sikap->presensi ?? '-' }}
+            </td>
+        </tr>
 
-<table>
+        <tr>
+            <th>
+                Predikat
+            </th>
 
-<tr>
+            <td>
+                {{ $predikat }}
+            </td>
+        </tr>
 
-<th width="8%">No</th>
+        <tr>
+            <th>
+                Deskripsi
+            </th>
 
-<th>Komponen Penilaian</th>
+            <td>
+                {{ $deskripsi }}
+            </td>
+        </tr>
 
-<th width="20%">Nilai</th>
+    </table>
 
-</tr>
+    {{-- TANDA TANGAN --}}
+    <table class="footer">
 
-<tr>
+        <tr>
 
-<td class="text-center">1</td>
+            <td width="55%"></td>
 
-<td>Rata-rata Formatif</td>
+            <td>
 
-<td class="text-center">{{ number_format($formatif,2) }}</td>
+                Sintang, {{ now()->translatedFormat('d F Y') }}
 
-</tr>
+                <br><br><br><br>
 
-<tr>
+                Guru Mata Pelajaran
 
-<td class="text-center">2</td>
+                <br><br>
 
-<td>PH Pengetahuan</td>
+                <strong>
+                    {{ strtoupper($guru->nama) }}
+                </strong>
 
-<td class="text-center">{{ number_format($phPengetahuan,2) }}</td>
+                <br>
 
-</tr>
+                NIP. {{ $guru->nip }}
 
-<tr>
+            </td>
 
-<td class="text-center">3</td>
+        </tr>
 
-<td>STS</td>
-
-<td class="text-center">{{ number_format($sts,2) }}</td>
-
-</tr>
-
-<tr>
-
-<td class="text-center">4</td>
-
-<td>SAS</td>
-
-<td class="text-center">{{ number_format($sas,2) }}</td>
-
-</tr>
-
-<tr>
-
-<th colspan="2">
-
-Nilai Pengetahuan
-
-</th>
-
-<th class="text-center">
-
-{{ number_format($nilaiPengetahuan,2) }}
-
-</th>
-
-</tr>
-
-<tr>
-
-<td class="text-center">5</td>
-
-<td>PH Keterampilan</td>
-
-<td class="text-center">{{ number_format($phKeterampilan,2) }}</td>
-
-</tr>
-
-<tr>
-
-<th colspan="2">
-
-Nilai Keterampilan
-
-</th>
-
-<th class="text-center">
-
-{{ number_format($nilaiKeterampilan,2) }}
-
-</th>
-
-</tr>
-
-<tr>
-
-<th colspan="2">
-
-Nilai Akhir
-
-</th>
-
-<th class="text-center">
-
-{{ number_format($nilaiAkhir,2) }}
-
-</th>
-
-</tr>
-
-</table>
-
-<br>
-
-<table>
-
-<tr>
-
-<th width="30%">
-
-Sikap
-
-</th>
-
-<td>
-
-{{ $sikap->sikap ?? '-' }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Presensi
-
-</th>
-
-<td>
-
-{{ $sikap->presensi ?? '-' }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Predikat
-
-</th>
-
-<td>
-
-{{ $predikat }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Deskripsi
-
-</th>
-
-<td>
-
-{{ $deskripsi }}
-
-</td>
-
-</tr>
-
-</table>
-
-<br><br><br>
-
-<table class="no-border">
-
-<tr class="no-border">
-
-<td class="no-border" width="55%"></td>
-
-<td class="no-border" align="center">
-
-Sintang, {{ date('d F Y') }}
-
-<br><br>
-
-Guru Mata Pelajaran
-
-<br><br><br><br><br>
-
-<b>
-
-{{ strtoupper($guru->nama) }}
-
-</b>
-
-</td>
-
-</tr>
-
-</table>
+    </table>
 
 </body>
+
 </html>

@@ -89,12 +89,11 @@ class RaporController extends Controller
         */
 
         $formatif = NilaiFormatif::whereHas('tp', function ($q) use ($mapel, $siswa) {
-
-            $q->where('mapel_id', $mapel->id)
-            ->where('kelas_id', $siswa->kelas_id);
-
+    $q->where('mapel_id', $mapel->id)
+      ->where('kelas_id', $siswa->kelas_id);
         })
         ->where('siswa_id', $siswa->id)
+        ->where('tahun_ajaran_id', $tahun->id)
         ->avg('nilai') ?? 0;
 
         /*
@@ -259,12 +258,11 @@ class RaporController extends Controller
         */
 
         $formatif = NilaiFormatif::whereHas('tp', function ($q) use ($mapel, $siswa) {
-
             $q->where('mapel_id', $mapel->id)
             ->where('kelas_id', $siswa->kelas_id);
-
         })
         ->where('siswa_id', $siswa->id)
+        ->where('tahun_ajaran_id', $tahun->id)
         ->avg('nilai') ?? 0;
 
         /*

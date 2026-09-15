@@ -76,6 +76,33 @@
 
 <body>
 
+    <div style="text-align:right; margin-bottom:15px;">
+    <a href="{{ route('rapor.pdf', $siswa->id) }}"
+       style="
+           display:inline-block;
+           padding:8px 15px;
+           background:#dc3545;
+           color:#fff;
+           text-decoration:none;
+           border-radius:5px;
+       ">
+        Cetak PDF
+    </a>
+
+    <a href="{{ route('rapor.index') }}"
+       style="
+           display:inline-block;
+           padding:8px 15px;
+           background:#6c757d;
+           color:#fff;
+           text-decoration:none;
+           border-radius:5px;
+           margin-left:5px;
+       ">
+        Kembali
+    </a>
+</div>
+
     <h2>RAPOR HASIL BELAJAR</h2>
 
     <h3>SMK NEGERI 1 SUNGAI TEBELIAN</h3>
@@ -148,7 +175,7 @@
 
             <td>
 
-                {{ $tahun->tahun_ajaran }}
+                {{ $tahun->tahun_ajaran }} - Semester {{ $tahun->semester }}
 
             </td>
 

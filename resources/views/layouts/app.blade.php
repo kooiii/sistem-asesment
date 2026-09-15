@@ -190,8 +190,13 @@ Presensi & Sikap
 </a>
 
 <a href="{{ route('laporan.index') }}"
-class="{{ request()->routeIs('laporan') ?'active':'' }}">
+class="{{ request()->routeIs('laporan.*') ? 'active' : '' }}">
 Rekap Nilai
+</a>
+
+<a href="{{ route('rapor.index') }}"
+class="{{ request()->routeIs('rapor.*') ? 'active' : '' }}">
+Rapor
 </a>
 
 <a href="{{ route('logout') }}">

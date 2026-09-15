@@ -39,16 +39,32 @@ class NilaiFormatifController extends Controller
     | Validasi Context Guru
     |--------------------------------------------------------------------------
     */
-    if($tp->guru_id != $guru->id){
+
+    if ($tp->guru_id != $guru->id) {
         abort(403);
     }
 
-    if($tp->kelas_id != session('kelas_aktif')){
+    if ($tp->kelas_id != session('kelas_aktif')) {
         abort(403);
     }
 
-    if($tp->mapel_id != session('mapel_aktif')){
+    if ($tp->mapel_id != session('mapel_aktif')) {
         abort(403);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tahun Ajaran Aktif
+    |--------------------------------------------------------------------------
+    */
+
+    $tahun = TahunAjaran::where('aktif', true)->first();
+
+    if (!$tahun) {
+        return back()->with(
+            'error',
+            'Tahun ajaran aktif belum tersedia.'
+        );
     }
 
     /*
@@ -61,78 +77,66 @@ class NilaiFormatifController extends Controller
         'kelas_id',
         session('kelas_aktif')
     )
-
     ->orderBy('nama')
-
     ->get();
 
-    foreach($siswas as $siswa){
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil nilai formatif tahun ajaran aktif
+    |--------------------------------------------------------------------------
+    */
+
+    foreach ($siswas as $siswa) {
 
         $nilai = NilaiFormatif::where(
-
             'tp_id',
-
             $tp->id
-
         )
-
         ->where(
-
             'siswa_id',
-
             $siswa->id
-
         )
-
+        ->where(
+            'tahun_ajaran_id',
+            $tahun->id
+        )
         ->get()
-
         ->keyBy('teknik');
 
-        $siswa->tugas = optional($nilai->get('Tugas'))->nilai;
+        $siswa->tugas =
+            optional($nilai->get('Tugas'))->nilai;
 
-        $siswa->kuis = optional($nilai->get('Kuis'))->nilai;
+        $siswa->kuis =
+            optional($nilai->get('Kuis'))->nilai;
 
-        $siswa->praktik = optional($nilai->get('Praktik'))->nilai;
+        $siswa->praktik =
+            optional($nilai->get('Praktik'))->nilai;
 
-        $siswa->presentasi = optional($nilai->get('Presentasi'))->nilai;
+        $siswa->presentasi =
+            optional($nilai->get('Presentasi'))->nilai;
 
         $array = array_filter([
-
             $siswa->tugas,
-
             $siswa->kuis,
-
             $siswa->praktik,
-
             $siswa->presentasi
-
-        ],function($v){
-
+        ], function ($v) {
             return $v !== null;
-
         });
 
         $siswa->rata = count($array)
-
-            ? round(array_sum($array)/count($array),2)
-
+            ? round(array_sum($array) / count($array), 2)
             : null;
     }
 
     return view(
-
         'nilai_formatif.create',
-
         compact(
-
             'guru',
-
             'tp',
-
-            'siswas'
-
+            'siswas',
+            'tahun'
         )
-
     );
 }
 
