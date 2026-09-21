@@ -22,36 +22,62 @@ class PresensiSikapController extends Controller
             'kelas'
         ])->findOrFail(session('id'));
 
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
         $tahun = TahunAjaran::where(
             'aktif',
             true
         )->first();
 
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
+            abort(403);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Sikap & Presensi
+        |--------------------------------------------------------------------------
+        */
+
         $data = SikapPresensi::with([
             'siswa.kelas',
             'tahunAjaran'
         ])
-        ->whereHas('siswa', function($q){
+        ->where(
+            'tahun_ajaran_id',
+            $tahun->id
+        )
+        ->whereHas('siswa', function ($q) {
 
             $q->where(
                 'kelas_id',
                 session('kelas_aktif')
             );
 
-        });
-
-        if($tahun){
-
-            $data->where(
-                'tahun_ajaran_id',
-                $tahun->id
-            );
-
-        }
-
-        $data = $data
-            ->orderBy('id','desc')
-            ->get();
+        })
+        ->orderBy('id', 'desc')
+        ->get();
 
         return view(
             'presensi.index',
@@ -62,6 +88,7 @@ class PresensiSikapController extends Controller
             )
         );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -76,10 +103,43 @@ class PresensiSikapController extends Controller
             'mapel'
         ])->findOrFail(session('id'));
 
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
         $tahun = TahunAjaran::where(
             'aktif',
             true
         )->first();
+
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
+            abort(403);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Siswa Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
 
         $siswas = Siswa::where(
             'kelas_id',
@@ -88,28 +148,27 @@ class PresensiSikapController extends Controller
         ->orderBy('nama')
         ->get();
 
-        foreach($siswas as $siswa){
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Nilai Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($siswas as $siswa) {
 
             $nilai = SikapPresensi::where(
                 'siswa_id',
                 $siswa->id
-            );
-
-            if($tahun){
-
-                $nilai->where(
-                    'tahun_ajaran_id',
-                    $tahun->id
-                );
-
-            }
-
-            $nilai = $nilai->first();
+            )
+            ->where(
+                'tahun_ajaran_id',
+                $tahun->id
+            )
+            ->first();
 
             $siswa->sikap = optional($nilai)->sikap;
 
             $siswa->presensi = optional($nilai)->presensi;
-
         }
 
         return view(
@@ -122,7 +181,8 @@ class PresensiSikapController extends Controller
         );
     }
 
-        /*
+
+    /*
     |--------------------------------------------------------------------------
     | STORE
     |--------------------------------------------------------------------------
@@ -134,69 +194,140 @@ class PresensiSikapController extends Controller
 
             'siswa_id' => 'required|array',
 
-            'siswa_id.*' => 'exists:siswas,id',
+            'siswa_id.*' => 'required|exists:siswas,id',
 
             'sikap' => 'required|array',
+
             'sikap.*' => 'required|numeric|min:0|max:100',
 
             'presensi' => 'required|array',
+
             'presensi.*' => 'required|numeric|min:0|max:100',
 
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Guru
+        |--------------------------------------------------------------------------
+        */
+
+        $guru = Guru::with([
+            'kelas'
+        ])->findOrFail(session('id'));
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
 
         $tahun = TahunAjaran::where(
             'aktif',
             true
         )->first();
 
-        if(!$tahun){
+        if (!$tahun) {
 
             return back()->with(
                 'error',
                 'Tahun ajaran aktif belum tersedia.'
             );
-
         }
 
-        foreach($request->siswa_id as $i => $siswaId){
 
-            $siswa = Siswa::findOrFail($siswaId);
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
 
-            if($siswa->kelas_id != session('kelas_aktif')){
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
+            abort(403);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Nilai
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $request->siswa_id as $i => $siswaId
+        ) {
+
+            $siswa = Siswa::findOrFail(
+                $siswaId
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pastikan Siswa Berada di Kelas Aktif
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $siswa->kelas_id !=
+                session('kelas_aktif')
+            ) {
                 continue;
             }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pastikan Index Nilai Tersedia
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                !isset($request->sikap[$i]) ||
+                !isset($request->presensi[$i])
+            ) {
+                continue;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Simpan / Update
+            |--------------------------------------------------------------------------
+            */
 
             SikapPresensi::updateOrCreate(
 
                 [
-
                     'siswa_id' => $siswaId,
 
                     'tahun_ajaran_id' => $tahun->id
-
                 ],
 
                 [
-
                     'sikap' => $request->sikap[$i],
 
                     'presensi' => $request->presensi[$i]
-
                 ]
 
             );
-
         }
 
+
         return redirect()
-
             ->route('presensi.index')
-
             ->with(
                 'success',
                 'Data Sikap & Presensi berhasil disimpan.'
             );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -210,24 +341,81 @@ class PresensiSikapController extends Controller
             'kelas'
         ])->findOrFail(session('id'));
 
-        $data = SikapPresensi::with([
-            'siswa'
-        ])->findOrFail($id);
 
-        if(
-            $data->siswa->kelas_id != session('kelas_aktif')
-        ){
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $tahun = TahunAjaran::where(
+            'aktif',
+            true
+        )->first();
+
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
             abort(403);
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Tahun Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $data = SikapPresensi::with([
+            'siswa'
+        ])
+        ->where(
+            'tahun_ajaran_id',
+            $tahun->id
+        )
+        ->findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Siswa Berada di Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $data->siswa->kelas_id !=
+            session('kelas_aktif')
+        ) {
+            abort(403);
+        }
+
 
         return view(
             'presensi.edit',
             compact(
                 'guru',
+                'tahun',
                 'data'
             )
         );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -235,43 +423,122 @@ class PresensiSikapController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function update(Request $request, $id)
-    {
+    public function update(
+        Request $request,
+        $id
+    ) {
+
         $request->validate([
 
-            'sikap' => 'required|numeric|min:0|max:100',
+            'sikap' =>
+                'required|numeric|min:0|max:100',
 
-            'presensi' => 'required|numeric|min:0|max:100'
+            'presensi' =>
+                'required|numeric|min:0|max:100'
 
         ]);
 
-        $data = SikapPresensi::with(
-            'siswa'
-        )->findOrFail($id);
 
-        if(
-            $data->siswa->kelas_id != session('kelas_aktif')
-        ){
+        /*
+        |--------------------------------------------------------------------------
+        | Guru
+        |--------------------------------------------------------------------------
+        */
+
+        $guru = Guru::with([
+            'kelas'
+        ])->findOrFail(session('id'));
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $tahun = TahunAjaran::where(
+            'aktif',
+            true
+        )->first();
+
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
             abort(403);
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Tahun Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $data = SikapPresensi::with(
+            'siswa'
+        )
+        ->where(
+            'tahun_ajaran_id',
+            $tahun->id
+        )
+        ->findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Siswa Berada di Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $data->siswa->kelas_id !=
+            session('kelas_aktif')
+        ) {
+            abort(403);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update
+        |--------------------------------------------------------------------------
+        */
+
         $data->update([
 
-            'sikap' => $request->sikap,
+            'sikap' =>
+                $request->sikap,
 
-            'presensi' => $request->presensi
+            'presensi' =>
+                $request->presensi
 
         ]);
 
+
         return redirect()
-
             ->route('presensi.index')
-
             ->with(
                 'success',
                 'Data berhasil diperbarui.'
             );
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -281,26 +548,89 @@ class PresensiSikapController extends Controller
 
     public function destroy($id)
     {
-        $data = SikapPresensi::with(
-            'siswa'
-        )->findOrFail($id);
+        $guru = Guru::with([
+            'kelas'
+        ])->findOrFail(session('id'));
 
-        if(
-            $data->siswa->kelas_id != session('kelas_aktif')
-        ){
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tahun Ajaran Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $tahun = TahunAjaran::where(
+            'aktif',
+            true
+        )->first();
+
+        if (!$tahun) {
+            return back()->with(
+                'error',
+                'Tahun ajaran aktif belum tersedia.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Guru Mengampu Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$guru->kelas
+                ->pluck('id')
+                ->contains(session('kelas_aktif'))
+        ) {
             abort(403);
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data Tahun Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        $data = SikapPresensi::with(
+            'siswa'
+        )
+        ->where(
+            'tahun_ajaran_id',
+            $tahun->id
+        )
+        ->findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan Siswa Berada di Kelas Aktif
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $data->siswa->kelas_id !=
+            session('kelas_aktif')
+        ) {
+            abort(403);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hapus
+        |--------------------------------------------------------------------------
+        */
+
         $data->delete();
 
+
         return redirect()
-
             ->route('presensi.index')
-
             ->with(
                 'success',
                 'Data berhasil dihapus.'
             );
     }
-
 }

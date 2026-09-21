@@ -4,23 +4,45 @@
 
 <div class="container">
 
+    {{-- SUCCESS --}}
     @if(session('success'))
 
-    <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-success alert-dismissible fade show">
 
-        <i class="fa fa-check-circle"></i>
+            <i class="fa fa-check-circle"></i>
 
-        {{ session('success') }}
+            {{ session('success') }}
 
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert">
-        </button>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
 
-    </div>
+        </div>
 
     @endif
+
+
+    {{-- ERROR --}}
+    @if(session('error'))
+
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="fa fa-times-circle"></i>
+
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    @endif
+
 
     <div class="card shadow">
 
@@ -31,16 +53,16 @@
                 <div>
 
                     <h4 class="mb-0">
-
                         Data Sikap & Presensi
-
                     </h4>
 
                     <small>
 
                         Tahun Ajaran :
 
-                        {{ $tahun ? $tahun->tahun_ajaran.' - '.$tahun->semester : '-' }}
+                        {{ $tahun->tahun_ajaran }}
+                        -
+                        {{ $tahun->semester }}
 
                     </small>
 
@@ -59,7 +81,7 @@
                     </a>
 
                     <a
-                        href="{{ url('/dashboard') }}"
+                        href="{{ route('dashboard') }}"
                         class="btn btn-secondary btn-sm">
 
                         <i class="fa fa-arrow-left"></i>
@@ -74,8 +96,10 @@
 
         </div>
 
+
         <div class="card-body">
 
+            {{-- INFORMASI KELAS --}}
             <div class="alert alert-info">
 
                 <div class="row">
@@ -86,15 +110,34 @@
 
                         <br>
 
-                        {{ optional($guru->kelas->where('id',session('kelas_aktif'))->first())->nama_kelas }}
+                        {{
+                            optional(
+                                $guru->kelas
+                                    ->where('id', session('kelas_aktif'))
+                                    ->first()
+                            )->nama_kelas
+                        }}
 
                     </div>
 
+                    <div class="col-md-6">
+
+                        <strong>Tahun Ajaran</strong>
+
+                        <br>
+
+                        {{ $tahun->tahun_ajaran }}
+                        -
+                        {{ $tahun->semester }}
+
+                    </div>
 
                 </div>
 
             </div>
 
+
+            {{-- DATA --}}
             <table class="table table-bordered table-hover align-middle">
 
                 <thead class="table-primary text-center">
@@ -102,135 +145,139 @@
                     <tr>
 
                         <th width="60">
-
                             No
-
                         </th>
 
                         <th>
-
                             Nama Siswa
-
                         </th>
 
                         <th width="120">
-
                             Sikap
-
                         </th>
 
                         <th width="120">
-
                             Predikat
-
                         </th>
 
                         <th width="120">
-
                             Presensi
-
                         </th>
 
                         <th width="170">
-
                             Aksi
-
                         </th>
 
                     </tr>
 
                 </thead>
 
+
                 <tbody>
 
                     @forelse($data as $d)
 
-                    <tr>
+                        <tr>
 
-                        <td class="text-center">
+                            <td class="text-center">
+                                {{ $loop->iteration }}
+                            </td>
 
-                            {{ $loop->iteration }}
+                            <td>
+                                {{ $d->siswa->nama }}
+                            </td>
 
-                        </td>
+                            <td class="text-center">
+                                {{ number_format($d->sikap, 2) }}
+                            </td>
 
-                        <td>
+                            <td class="text-center">
 
-                            {{ $d->siswa->nama }}
+                                @if($d->predikat == 'SB')
 
-                        </td>
+                                    <span class="badge bg-success">
+                                        SB
+                                    </span>
 
-                        <td class="text-center">
+                                @elseif($d->predikat == 'B')
 
-                            {{ number_format($d->sikap,2) }}
+                                    <span class="badge bg-primary">
+                                        B
+                                    </span>
 
-                        </td>
+                                @elseif($d->predikat == 'C')
 
-                        <td class="text-center">
+                                    <span class="badge bg-warning text-dark">
+                                        C
+                                    </span>
 
-                            @if($d->predikat == 'SB')
-                                <span class="badge bg-success">SB</span>
-                            @elseif($d->predikat == 'B')
-                                <span class="badge bg-primary">B</span>
-                            @elseif($d->predikat == 'C')
-                                <span class="badge bg-warning">C</span>
-                            @else
-                                <span class="badge bg-danger">K</span>
-                            @endif
+                                @else
 
-                        </td>
+                                    <span class="badge bg-danger">
+                                        K
+                                    </span>
 
-                        <td class="text-center">
+                                @endif
 
-                            {{ number_format($d->presensi,2) }}
+                            </td>
 
-                        </td>
+                            <td class="text-center">
+                                {{ number_format($d->presensi, 2) }}
+                            </td>
 
-                        <td class="text-center">
+                            <td class="text-center">
 
-                            <a
-                                href="{{ route('presensi.edit',$d->id) }}"
-                                class="btn btn-warning btn-sm">
+                                <a
+                                    href="{{ route('presensi.edit', $d->id) }}"
+                                    class="btn btn-warning btn-sm">
 
-                                <i class="fa fa-edit"></i>
+                                    <i class="fa fa-edit"></i>
 
-                            </a>
+                                    Edit
 
-                            <form
-                                action="{{ route('presensi.destroy',$d->id) }}"
-                                method="POST"
-                                style="display:inline;">
+                                </a>
 
-                                @csrf
 
-                                @method('DELETE')
+                                <form
+                                    action="{{ route('presensi.destroy', $d->id) }}"
+                                    method="POST"
+                                    style="display:inline;">
 
-                                <button
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                    @csrf
 
-                                    <i class="fa fa-trash"></i>
+                                    @method('DELETE')
 
-                                </button>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Yakin ingin menghapus data ini?')">
 
-                            </form>
+                                        <i class="fa fa-trash"></i>
 
-                        </td>
+                                        Hapus
 
-                    </tr>
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
 
                     @empty
 
-                    <tr>
+                        <tr>
 
-                        <td
-                            colspan="6"
-                            class="text-center">
+                            <td
+                                colspan="6"
+                                class="text-center text-muted">
 
-                            Belum ada data Sikap & Presensi.
+                                Belum ada data Sikap & Presensi
+                                untuk tahun ajaran aktif.
 
-                        </td>
+                            </td>
 
-                    </tr>
+                        </tr>
 
                     @endforelse
 

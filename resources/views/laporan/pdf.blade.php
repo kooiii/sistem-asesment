@@ -9,72 +9,47 @@
 
     <style>
 
-        body{
-
+        body {
             font-family: DejaVu Sans, sans-serif;
-
-            font-size:12px;
-
+            font-size: 10px;
         }
 
-        h2,h4{
-
-            margin:0;
-
-            text-align:center;
-
+        h2,
+        h4 {
+            margin: 0;
+            text-align: center;
         }
 
-        p{
-
-            margin-top:5px;
-
-            margin-bottom:15px;
-
-            text-align:center;
-
+        p {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
-        table{
-
-            width:100%;
-
-            border-collapse:collapse;
-
-            margin-top:15px;
-
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
         }
 
-        table th{
-
-            background:#e9ecef;
-
-            border:1px solid #000;
-
-            padding:7px;
-
-            text-align:center;
-
+        table th {
+            background: #e9ecef;
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
         }
 
-        table td{
-
-            border:1px solid #000;
-
-            padding:6px;
-
+        table td {
+            border: 1px solid #000;
+            padding: 5px;
         }
 
-        .center{
-
-            text-align:center;
-
+        .center {
+            text-align: center;
         }
 
-        .right{
-
-            text-align:right;
-
+        .right {
+            text-align: right;
         }
 
     </style>
@@ -84,184 +59,163 @@
 <body>
 
 <h2>
-
-SMK NEGERI 1 SUNGAI TEBELIAN
-
+    SMK NEGERI 1 SUNGAI TEBELIAN
 </h2>
 
 <h4>
-
-LAPORAN REKAP NILAI SISWA
-
+    LAPORAN REKAP NILAI SISWA
 </h4>
 
 <p>
-
-Tahun Ajaran
-
-{{ $tahun->tahun_ajaran }}
-
--
-
-Semester
-
-{{ $tahun->semester }}
-
+    Tahun Ajaran
+    {{ $tahun->tahun_ajaran }}
+    -
+    Semester
+    {{ $tahun->semester }}
 </p>
 
 <table>
 
-<thead>
+    <thead>
 
-<tr>
+        <tr>
 
-<th width="35">No</th>
+            <th width="30">No</th>
 
-<th>Nama Siswa</th>
+            <th>Nama Siswa</th>
 
-<th>Kelas</th>
+            <th>Kelas</th>
 
-<th>Mapel</th>
+            <th>Mapel</th>
 
-<th>Formatif</th>
+            <th>Formatif</th>
 
-<th>STS</th>
+            <th>STS</th>
 
-<th>SAS</th>
+            <th>SAS</th>
 
-<th>Akhir</th>
+            <th>Sikap</th>
 
-<th>Predikat</th>
+            <th>Presensi</th>
 
-<th>Sikap</th>
+            <th>Sikap & Presensi</th>
 
-<th>Presensi</th>
+            <th>Nilai Akhir</th>
 
-</tr>
+            <th>Predikat</th>
 
-</thead>
+        </tr>
 
-<tbody>
+    </thead>
 
-@forelse($laporan as $row)
+    <tbody>
 
-<tr>
+        @forelse($laporan as $row)
 
-<td class="center">
+            <tr>
 
-{{ $loop->iteration }}
+                <td class="center">
+                    {{ $loop->iteration }}
+                </td>
 
-</td>
+                <td>
+                    {{ $row['nama'] }}
+                </td>
 
-<td>
+                <td class="center">
+                    {{ $row['kelas'] }}
+                </td>
 
-{{ $row['nama'] }}
+                <td>
+                    {{ $row['mapel'] }}
+                </td>
 
-</td>
+                <td class="center">
+                    {{ number_format($row['formatif'], 2) }}
+                </td>
 
-<td class="center">
+                <td class="center">
+                    {{ number_format($row['sts'], 2) }}
+                </td>
 
-{{ $row['kelas'] }}
+                <td class="center">
+                    {{ number_format($row['sas'], 2) }}
+                </td>
 
-</td>
+                <td class="center">
+                    {{ number_format($row['sikap'], 2) }}
+                </td>
 
-<td>
+                <td class="center">
+                    {{ number_format($row['presensi'], 2) }}
+                </td>
 
-{{ $row['mapel'] }}
+                <td class="center">
+                    {{ number_format($row['nilai_sikap_presensi'], 2) }}
+                </td>
 
-</td>
+                <td class="center">
 
-<td class="center">
+                    <strong>
+                        {{ number_format($row['akhir'], 2) }}
+                    </strong>
 
-{{ number_format($row['formatif'],2) }}
+                </td>
 
-</td>
+                <td class="center">
+                    {{ $row['predikat'] }}
+                </td>
 
-<td class="center">
+            </tr>
 
-{{ number_format($row['sts'],2) }}
+        @empty
 
-</td>
+            <tr>
 
-<td class="center">
+                <td colspan="12" class="center">
 
-{{ number_format($row['sas'],2) }}
+                    Belum ada data nilai.
 
-</td>
+                </td>
 
-<td class="center">
+            </tr>
 
-<strong>
+        @endforelse
 
-{{ number_format($row['akhir'],2) }}
-
-</strong>
-
-</td>
-
-<td class="center">
-
-{{ $row['predikat'] }}
-
-</td>
-
-<td class="center">
-
-{{ number_format($row['sikap'],2) }}
-
-</td>
-
-<td class="center">
-
-{{ number_format($row['presensi'],2) }}
-
-</td>
-
-</tr>
-
-@empty
-
-<tr>
-
-<td colspan="11" class="center">
-
-Belum ada data nilai.
-
-</td>
-
-</tr>
-
-@endforelse
-
-</tbody>
+    </tbody>
 
 </table>
 
-<br><br>
+<br>
+<br>
 
 <table style="width:100%;border:none;">
 
-<tr style="border:none;">
+    <tr style="border:none;">
 
-<td style="border:none;"></td>
+        <td style="border:none;"></td>
 
-<td style="border:none;text-align:center;width:250px;">
+        <td style="border:none;text-align:center;width:250px;">
 
-Sintang,
+            Sintang,
 
-{{ date('d-m-Y') }}
+            {{ date('d-m-Y') }}
 
-<br><br>
+            <br>
+            <br>
 
-Guru Mata Pelajaran
+            Guru Mata Pelajaran
 
-<br><br><br><br>
+            <br>
+            <br>
+            <br>
+            <br>
 
-_________________________
+            _________________________
 
-</td>
+        </td>
 
-</tr>
+    </tr>
 
 </table>
 

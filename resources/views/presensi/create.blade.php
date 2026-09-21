@@ -4,24 +4,33 @@
 
 <div class="container">
 
-    @if(session('success'))
+    {{-- ERROR VALIDATION --}}
+    @if($errors->any())
 
-        <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-danger">
 
-            <i class="fa fa-check-circle"></i>
+            <strong>
+                Terdapat kesalahan pada input:
+            </strong>
 
-            {{ session('success') }}
+            <ul class="mb-0 mt-2">
 
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-            </button>
+                @foreach($errors->all() as $error)
+
+                    <li>
+                        {{ $error }}
+                    </li>
+
+                @endforeach
+
+            </ul>
 
         </div>
 
     @endif
 
+
+    {{-- ERROR SESSION --}}
     @if(session('error'))
 
         <div class="alert alert-danger alert-dismissible fade show">
@@ -40,20 +49,21 @@
 
     @endif
 
+
     <div class="card shadow">
 
         <div class="card-header bg-primary text-white">
 
             <h4 class="mb-0">
-
                 Penilaian Sikap & Presensi
-
             </h4>
 
         </div>
 
+
         <div class="card-body">
 
+            {{-- INFORMASI --}}
             <div class="alert alert-info">
 
                 <div class="row">
@@ -64,7 +74,13 @@
 
                         <br>
 
-                        {{ optional($guru->kelas->where('id',session('kelas_aktif'))->first())->nama_kelas }}
+                        {{
+                            optional(
+                                $guru->kelas
+                                    ->where('id', session('kelas_aktif'))
+                                    ->first()
+                            )->nama_kelas
+                        }}
 
                     </div>
 
@@ -75,7 +91,9 @@
 
                         <br>
 
-                        {{ $tahun ? $tahun->tahun_ajaran.' - '.$tahun->semester : '-' }}
+                        {{ $tahun->tahun_ajaran }}
+                        -
+                        {{ $tahun->semester }}
 
                     </div>
 
@@ -83,11 +101,14 @@
 
             </div>
 
+
+            {{-- FORM --}}
             <form
                 action="{{ route('presensi.store') }}"
                 method="POST">
 
                 @csrf
+
 
                 <table class="table table-bordered table-hover align-middle">
 
@@ -96,111 +117,106 @@
                         <tr>
 
                             <th width="60">
-
                                 No
-
                             </th>
 
                             <th>
-
                                 Nama Siswa
-
                             </th>
 
                             <th width="150">
-
                                 Sikap
-
                             </th>
 
                             <th width="150">
-
                                 Presensi
-
                             </th>
 
                             <th width="120">
-
                                 Predikat
-
                             </th>
 
                         </tr>
 
                     </thead>
 
+
                     <tbody>
 
                         @forelse($siswas as $siswa)
 
-                        <tr>
+                            <tr>
 
-                            <td>
+                                <td class="text-center">
+                                    {{ $loop->iteration }}
+                                </td>
 
-                                {{ $loop->iteration }}
 
-                            </td>
+                                <td>
 
-                            <td>
+                                    {{ $siswa->nama }}
 
-                                {{ $siswa->nama }}
+                                    <input
+                                        type="hidden"
+                                        name="siswa_id[]"
+                                        value="{{ $siswa->id }}">
 
-                                <input
-                                    type="hidden"
-                                    name="siswa_id[]"
-                                    value="{{ $siswa->id }}">
+                                </td>
 
-                            </td>
 
-                            <td>
+                                <td>
 
-                                <input
-                                    type="number"
-                                    class="form-control sikap"
-                                    name="sikap[]"
-                                    min="0"
-                                    max="100"
-                                    value="{{ $siswa->sikap }}">
+                                    <input
+                                        type="number"
+                                        class="form-control sikap"
+                                        name="sikap[]"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        value="{{ old('sikap.' . $loop->index, $siswa->sikap) }}"
+                                        required>
 
-                            </td>
+                                </td>
 
-                            <td>
 
-                                <input
-                                    type="number"
-                                    class="form-control presensi"
-                                    name="presensi[]"
-                                    min="0"
-                                    max="100"
-                                    value="{{ $siswa->presensi }}">
+                                <td>
 
-                            </td>
+                                    <input
+                                        type="number"
+                                        class="form-control presensi"
+                                        name="presensi[]"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        value="{{ old('presensi.' . $loop->index, $siswa->presensi) }}"
+                                        required>
 
-                            <td>
+                                </td>
 
-                                <strong class="predikat">
 
-                                    -
+                                <td class="text-center">
 
-                                </strong>
+                                    <strong class="predikat">
+                                        -
+                                    </strong>
 
-                            </td>
+                                </td>
 
-                        </tr>
+                            </tr>
 
                         @empty
 
-                        <tr>
+                            <tr>
 
-                            <td
-                                colspan="5"
-                                class="text-center">
+                                <td
+                                    colspan="5"
+                                    class="text-center text-muted">
 
-                                Belum ada siswa.
+                                    Belum ada siswa pada kelas aktif.
 
-                            </td>
+                                </td>
 
-                        </tr>
+                            </tr>
 
                         @endforelse
 
@@ -208,13 +224,21 @@
 
                 </table>
 
-                <button class="btn btn-primary">
 
-                    <i class="fa fa-save"></i>
+                @if($siswas->count() > 0)
 
-                    Simpan
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
 
-                </button>
+                        <i class="fa fa-save"></i>
+
+                        Simpan
+
+                    </button>
+
+                @endif
+
 
                 <a
                     href="{{ route('presensi.index') }}"
@@ -234,57 +258,69 @@
 
 @endsection
 
+
 @push('scripts')
 
 <script>
 
-document.querySelectorAll("tbody tr").forEach(function(row){
+document.querySelectorAll("tbody tr").forEach(function(row) {
 
-    function hitung(){
+    const inputSikap = row.querySelector(".sikap");
+    const predikat = row.querySelector(".predikat");
 
-        let nilai = parseFloat(
+    if (!inputSikap || !predikat) {
+        return;
+    }
 
-            row.querySelector(".sikap").value
+    function hitungPredikat() {
 
-        );
+        let nilai = parseFloat(inputSikap.value);
 
-        let predikat = "-";
+        let hasil = "-";
 
-        if(!isNaN(nilai)){
+        if (!isNaN(nilai)) {
 
-            if(nilai>=90){
+            if (nilai >= 90) {
 
-                predikat="SB";
+                hasil = "SB";
 
-            }else if(nilai>=80){
+            } else if (nilai >= 80) {
 
-                predikat="B";
+                hasil = "B";
 
-            }else if(nilai>=70){
+            } else if (nilai >= 70) {
 
-                predikat="C";
+                hasil = "C";
 
-            }else{
+            } else {
 
-                predikat="K";
+                hasil = "K";
 
             }
 
         }
 
-        row.querySelector(".predikat").innerHTML = predikat;
-
+        predikat.innerHTML = hasil;
     }
 
-    row.querySelector(".sikap")
 
-        .addEventListener("keyup",hitung);
+    inputSikap.addEventListener(
+        "keyup",
+        hitungPredikat
+    );
 
-    row.querySelector(".sikap")
+    inputSikap.addEventListener(
+        "change",
+        hitungPredikat
+    );
 
-        .addEventListener("change",hitung);
+    inputSikap.addEventListener(
+        "input",
+        hitungPredikat
+    );
 
-    hitung();
+
+    hitungPredikat();
 
 });
 

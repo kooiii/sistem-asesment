@@ -4,56 +4,66 @@
 
 <div class="container">
 
-    @if(session('success'))
+    {{-- ERROR VALIDATION --}}
+    @if($errors->any())
 
-    <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-danger">
 
-        <i class="fa fa-check-circle"></i>
+            <strong>
+                Terdapat kesalahan pada input:
+            </strong>
 
-        {{ session('success') }}
+            <ul class="mb-0 mt-2">
 
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert">
-        </button>
+                @foreach($errors->all() as $error)
 
-    </div>
+                    <li>
+                        {{ $error }}
+                    </li>
+
+                @endforeach
+
+            </ul>
+
+        </div>
 
     @endif
 
+
+    {{-- ERROR SESSION --}}
     @if(session('error'))
 
-    <div class="alert alert-danger alert-dismissible fade show">
+        <div class="alert alert-danger alert-dismissible fade show">
 
-        <i class="fa fa-times-circle"></i>
+            <i class="fa fa-times-circle"></i>
 
-        {{ session('error') }}
+            {{ session('error') }}
 
-        <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert">
-        </button>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
 
-    </div>
+        </div>
 
     @endif
+
 
     <div class="card shadow">
 
         <div class="card-header bg-warning text-dark">
 
             <h4 class="mb-0">
-
                 Edit Sikap & Presensi
-
             </h4>
 
         </div>
 
+
         <div class="card-body">
 
+            {{-- INFORMASI --}}
             <div class="alert alert-info">
 
                 <div class="row">
@@ -64,9 +74,16 @@
 
                         <br>
 
-                        {{ optional($guru->kelas->where('id',session('kelas_aktif'))->first())->nama_kelas }}
+                        {{
+                            optional(
+                                $guru->kelas
+                                    ->where('id', session('kelas_aktif'))
+                                    ->first()
+                            )->nama_kelas
+                        }}
 
                     </div>
+
 
                     <div class="col-md-4">
 
@@ -78,14 +95,16 @@
 
                     </div>
 
+
                     <div class="col-md-4">
 
                         <strong>Tahun Ajaran</strong>
 
                         <br>
 
-                        {{ optional($data->tahunAjaran)->tahun_ajaran }}
-                        {{ optional($data->tahunAjaran)->semester }}
+                        {{ $tahun->tahun_ajaran }}
+                        -
+                        {{ $tahun->semester }}
 
                     </div>
 
@@ -93,19 +112,23 @@
 
             </div>
 
+
+            {{-- FORM --}}
             <form
-                action="{{ route('presensi.update',$data->id) }}"
+                action="{{ route('presensi.update', $data->id) }}"
                 method="POST">
 
                 @csrf
 
                 @method('PUT')
 
+
                 <div class="row">
 
                     <div class="col-md-6">
 
-                        <label class="form-label">
+                        <label
+                            class="form-label">
 
                             Nilai Sikap
 
@@ -118,14 +141,17 @@
                             class="form-control"
                             min="0"
                             max="100"
-                            value="{{ old('sikap',$data->sikap) }}"
+                            step="0.01"
+                            value="{{ old('sikap', $data->sikap) }}"
                             required>
 
                     </div>
 
+
                     <div class="col-md-6">
 
-                        <label class="form-label">
+                        <label
+                            class="form-label">
 
                             Nilai Presensi
 
@@ -137,18 +163,22 @@
                             class="form-control"
                             min="0"
                             max="100"
-                            value="{{ old('presensi',$data->presensi) }}"
+                            step="0.01"
+                            value="{{ old('presensi', $data->presensi) }}"
                             required>
 
                     </div>
 
                 </div>
 
+
+                {{-- PREDIKAT --}}
                 <div class="row mt-4">
 
                     <div class="col-md-6">
 
-                        <label class="form-label">
+                        <label
+                            class="form-label">
 
                             Predikat Sikap
 
@@ -164,9 +194,12 @@
 
                 </div>
 
+
+                {{-- BUTTON --}}
                 <div class="mt-4">
 
                     <button
+                        type="submit"
                         class="btn btn-warning">
 
                         <i class="fa fa-save"></i>
@@ -174,6 +207,7 @@
                         Update
 
                     </button>
+
 
                     <a
                         href="{{ route('presensi.index') }}"
@@ -195,71 +229,68 @@
 
 @endsection
 
+
 @push('scripts')
 
 <script>
 
-function hitungPredikat(){
+function hitungPredikat() {
 
     let nilai = parseFloat(
-
         document.getElementById("sikap").value
-
     );
 
     let predikat = "-";
 
-    if(!isNaN(nilai)){
+    if (!isNaN(nilai)) {
 
-        if(nilai>=90){
+        if (nilai >= 90) {
 
-            predikat="SB";
+            predikat = "SB";
 
-        }
+        } else if (nilai >= 80) {
 
-        else if(nilai>=80){
+            predikat = "B";
 
-            predikat="B";
+        } else if (nilai >= 70) {
 
-        }
+            predikat = "C";
 
-        else if(nilai>=70){
+        } else {
 
-            predikat="C";
-
-        }
-
-        else{
-
-            predikat="K";
+            predikat = "K";
 
         }
 
     }
 
     document.getElementById("predikat").value = predikat;
-
 }
 
-document.getElementById("sikap")
 
-.addEventListener(
+document
+    .getElementById("sikap")
+    .addEventListener(
+        "keyup",
+        hitungPredikat
+    );
 
-    "keyup",
 
-    hitungPredikat
+document
+    .getElementById("sikap")
+    .addEventListener(
+        "input",
+        hitungPredikat
+    );
 
-);
 
-document.getElementById("sikap")
+document
+    .getElementById("sikap")
+    .addEventListener(
+        "change",
+        hitungPredikat
+    );
 
-.addEventListener(
-
-    "change",
-
-    hitungPredikat
-
-);
 
 hitungPredikat();
 
