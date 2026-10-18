@@ -171,9 +171,11 @@ Logout
 <a href="{{ route('tujuan-pembelajaran.index') }}"
 class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian Formatif</a>
 
+
 <li class="nav-item">
     <a class="nav-link" data-bs-toggle="collapse" href="#sumatifMenu">
-        <i class="fa fa-file-alt"></i>Penilaian Sumatif</a>
+        Penilaian Sumatif
+    </a>
 
     <div class="collapse" id="sumatifMenu">
         <a class="nav-link ms-3"
@@ -183,6 +185,7 @@ class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian
            href="{{ route('nilai-sumatif.index') }}">SAS</a>
     </div>
 </li>
+
 
 <a href="{{ route('presensi.index') }}"
 class="{{ request()->routeIs('presensi.*') ?'active':'' }}">
@@ -213,7 +216,7 @@ Logout
 
     <div>
         <h4>Sistem Informasi Manajemen SMK Negeri 1 Sungai Tebelian</h4>
-        <small>Selamat datang,<strong>{{ session('nama') }}</strong></small>
+        <small>Selamat datang, <strong>{{ session('nama') }}</strong></small>
     </div>
 
     <div>

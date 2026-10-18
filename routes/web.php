@@ -66,13 +66,13 @@ Route::middleware(['ceklogin','cekrole:admin,guru'])->group(function(){
     
     Route::resource('tujuan-pembelajaran',TujuanPembelajaranController::class);
 
-    Route::resource('nilai-formatif', NilaiFormatifController::class);
+    Route::resource('nilai-formatif', NilaiFormatifController::class)->only(['index', 'create', 'store']);
     Route::resource('nilai-sumatif', NilaiSumatifController::class)->except(['edit','update']);
     Route::resource('guru', GuruController::class);
     Route::resource('siswa', SiswaController::class);
     Route::resource('kelas', KelasController::class);
     Route::resource('mapel', MapelController::class);
-    Route::resource('rapor', RaporController::class);
+    Route::resource('rapor', RaporController::class)->only(['index', 'show']);
     Route::get('/rapor/{id}/pdf',[RaporController::class,'pdf'])->name('rapor.pdf');
     
 
