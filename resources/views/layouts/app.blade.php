@@ -14,6 +14,31 @@
 
     <style>
 
+        
+        /* Menu submenu Penilaian Sumatif */
+        .sidebar .sumatif-menu .submenu {
+            padding-left: 40px;
+            font-size: 14px;
+            background: #263445;
+        }
+
+        .sidebar .sumatif-menu .submenu:hover {
+            background: #2563eb;
+        }
+
+        /* Tampilan menu sumatif tetap sama dengan menu lainnya */
+        .sidebar .sumatif-menu > a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 13px 20px;
+        }
+
+        .sidebar .sumatif-menu > a:hover {
+            background: #2563eb;
+        }
+
+
         body{
             background:#f4f6f9;
         }
@@ -166,31 +191,41 @@ Mata Pelajaran
 Logout
 </a>
 
+
 @else
 
 <a href="{{ route('tujuan-pembelajaran.index') }}"
-class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian Formatif</a>
+class="{{ request()->routeIs('tujuan-pembelajaran.*') ? 'active' : '' }}">
+Penilaian Formatif
+</a>
 
-
-
-<li class="nav-item">
-    <a class="nav-link" data-bs-toggle="collapse" href="#sumatifMenu">
+<div class="sumatif-menu">
+    <a href="#sumatifMenu"
+       data-bs-toggle="collapse"
+       role="button"
+       aria-expanded="{{ request()->routeIs('nilai-sumatif.*') ? 'true' : 'false' }}"
+       aria-controls="sumatifMenu">
         Penilaian Sumatif
     </a>
 
-    <div class="collapse" id="sumatifMenu">
-        <a class="nav-link ms-3"
-           href="{{ route('nilai-sumatif.index') }}">STS</a>
+    <div class="collapse {{ request()->routeIs('nilai-sumatif.*') ? 'show' : '' }}"
+         id="sumatifMenu">
 
-        <a class="nav-link ms-3"
-           href="{{ route('nilai-sumatif.index') }}">SAS</a>
+        <a class="submenu"
+           href="{{ route('nilai-sumatif.index') }}">
+            STS
+        </a>
+
+        <a class="submenu"
+           href="{{ route('nilai-sumatif.index') }}">
+            SAS
+        </a>
+
     </div>
-</li>
-
-
+</div>
 
 <a href="{{ route('presensi.index') }}"
-class="{{ request()->routeIs('presensi.*') ?'active':'' }}">
+class="{{ request()->routeIs('presensi.*') ? 'active' : '' }}">
 Presensi & Sikap
 </a>
 
@@ -209,6 +244,7 @@ Logout
 </a>
 
 @endif
+
 
 </div>
 
