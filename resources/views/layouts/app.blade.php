@@ -172,6 +172,7 @@ Logout
 class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian Formatif</a>
 
 
+
 <li class="nav-item">
     <a class="nav-link" data-bs-toggle="collapse" href="#sumatifMenu">
         Penilaian Sumatif
@@ -185,6 +186,7 @@ class="{{ request()->routeIs('tujuan-pembelajaran.*') ?'active':'' }}">Penilaian
            href="{{ route('nilai-sumatif.index') }}">SAS</a>
     </div>
 </li>
+
 
 
 <a href="{{ route('presensi.index') }}"
