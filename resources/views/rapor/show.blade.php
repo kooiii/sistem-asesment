@@ -77,7 +77,9 @@
 <body>
 
     <div style="text-align:right; margin-bottom:15px;">
-    <a href="{{ route('rapor.pdf', $siswa->id) }}"
+    <a href="{{ route('rapor.pdf', [
+        'rapor' => $siswa->id,
+        'mapel_id' => $mapel->id]) }}"
        style="
            display:inline-block;
            padding:8px 15px;

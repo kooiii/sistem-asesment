@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -11,7 +12,7 @@
 
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         h2,
@@ -35,13 +36,14 @@
         table th {
             background: #e9ecef;
             border: 1px solid #000;
-            padding: 6px;
+            padding: 6px 3px;
             text-align: center;
+            vertical-align: middle;
         }
 
         table td {
             border: 1px solid #000;
-            padding: 5px;
+            padding: 5px 3px;
         }
 
         .center {
@@ -50,6 +52,12 @@
 
         .right {
             text-align: right;
+        }
+
+        .keterangan {
+            margin-top: 12px;
+            font-size: 9px;
+            text-align: left;
         }
 
     </style>
@@ -80,29 +88,47 @@
 
         <tr>
 
-            <th width="30">No</th>
+            <th rowspan="2" width="25">No</th>
 
-            <th>Nama Siswa</th>
+            <th rowspan="2">Nama Siswa</th>
 
-            <th>Kelas</th>
+            <th rowspan="2">Kelas</th>
 
-            <th>Mapel</th>
+            <th rowspan="2">Mapel</th>
 
-            <th>Formatif</th>
+            <th rowspan="2">
+                Formatif<br>(50%)
+            </th>
 
-            <th>STS</th>
+            <th rowspan="2">
+                STS<br>(15%)
+            </th>
 
-            <th>SAS</th>
+            <th rowspan="2">
+                SAS<br>(20%)
+            </th>
+
+            <th colspan="3">
+                Sikap & Presensi (15%)
+            </th>
+
+            <th rowspan="2">
+                Nilai Akhir
+            </th>
+
+            <th rowspan="2">
+                Predikat
+            </th>
+
+        </tr>
+
+        <tr>
 
             <th>Sikap</th>
 
             <th>Presensi</th>
 
-            <th>Sikap & Presensi</th>
-
-            <th>Nilai Akhir</th>
-
-            <th>Predikat</th>
+            <th>Nilai Gabungan</th>
 
         </tr>
 
@@ -155,11 +181,9 @@
                 </td>
 
                 <td class="center">
-
                     <strong>
                         {{ number_format($row['akhir'], 2) }}
                     </strong>
-
                 </td>
 
                 <td class="center">
@@ -173,9 +197,7 @@
             <tr>
 
                 <td colspan="12" class="center">
-
                     Belum ada data nilai.
-
                 </td>
 
             </tr>
@@ -185,6 +207,27 @@
     </tbody>
 
 </table>
+
+<div class="keterangan">
+
+    <strong>Keterangan Bobot Penilaian:</strong>
+
+    <br>
+
+    Formatif = 50% |
+
+    STS = 15% |
+
+    SAS = 20% |
+
+    Sikap & Presensi = 15%
+
+    <br>
+
+    Nilai Sikap dan Presensi digabung menjadi satu komponen
+    penilaian dengan bobot 15%.
+
+</div>
 
 <br>
 <br>

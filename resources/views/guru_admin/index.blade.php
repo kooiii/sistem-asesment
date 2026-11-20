@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -7,91 +8,68 @@
     {{-- NOTIFIKASI BERHASIL --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-
             <i class="fas fa-check-circle me-2"></i>
-
             {{ session('success') }}
 
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert">
             </button>
-
         </div>
     @endif
-
 
     {{-- NOTIFIKASI ERROR --}}
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-
             <i class="fas fa-exclamation-circle me-2"></i>
-
             {{ session('error') }}
 
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert">
             </button>
-
         </div>
     @endif
 
-
     {{-- VALIDASI ERROR --}}
     @if($errors->any())
-
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
 
             <strong>Terjadi kesalahan:</strong>
 
             <ul class="mb-0 mt-2">
-
                 @foreach($errors->all() as $error)
-
                     <li>{{ $error }}</li>
-
                 @endforeach
-
             </ul>
 
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert">
             </button>
-
         </div>
-
     @endif
-
 
     {{-- HEADER --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-
-            <h3 class="mb-1">
-                Data Guru
-            </h3>
+            <h3 class="mb-1">Data Guru</h3>
 
             <p class="text-muted mb-0">
                 Kelola data guru yang terdaftar dalam sistem.
             </p>
-
         </div>
-
 
         <a href="{{ route('guru.create') }}"
            class="btn btn-primary">
 
             <i class="fas fa-plus me-1"></i>
-
             Tambah Guru
 
         </a>
 
     </div>
-
 
     {{-- TABEL DATA GURU --}}
     <div class="card shadow-sm">
@@ -99,15 +77,11 @@
         <div class="card-header bg-primary text-white">
 
             <h5 class="mb-0">
-
                 <i class="fas fa-users me-2"></i>
-
                 Daftar Guru
-
             </h5>
 
         </div>
-
 
         <div class="card-body">
 
@@ -119,7 +93,7 @@
 
                         <tr>
 
-                            <th width="60">
+                            <th width="60" class="text-center">
                                 No
                             </th>
 
@@ -132,17 +106,24 @@
                             </th>
 
                             <th>
+                                Nomor Telepon
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
                                 Role
                             </th>
 
-                            <th width="260">
+                            <th width="260" class="text-center">
                                 Aksi
                             </th>
 
                         </tr>
 
                     </thead>
-
 
                     <tbody>
 
@@ -151,25 +132,24 @@
                             <tr>
 
                                 <td class="text-center">
-
                                     {{ $loop->iteration }}
-
                                 </td>
 
-
                                 <td>
-
                                     {{ $g->nip }}
-
                                 </td>
-
 
                                 <td>
-
                                     {{ $g->nama }}
-
                                 </td>
 
+                                <td>
+                                    {{ $g->telepon ?: '-' }}
+                                </td>
+
+                                <td>
+                                    {{ $g->email ?: '-' }}
+                                </td>
 
                                 <td>
 
@@ -189,49 +169,39 @@
 
                                 </td>
 
-
-                                <td>
+                                <td class="text-center">
 
                                     {{-- PENUGASAN --}}
-
                                     <a href="{{ route('guru.penugasan', $g->id) }}"
-                                       class="btn btn-info btn-sm text-white">
+                                       class="btn btn-info btn-sm text-white mb-1">
 
                                         <i class="fas fa-tasks me-1"></i>
-
                                         Atur Penugasan
 
                                     </a>
 
-
                                     {{-- EDIT --}}
-
                                     <a href="{{ route('guru.edit', $g->id) }}"
-                                       class="btn btn-warning btn-sm">
+                                       class="btn btn-warning btn-sm mb-1">
 
                                         <i class="fas fa-edit me-1"></i>
-
                                         Edit
 
                                     </a>
 
-
                                     {{-- HAPUS --}}
-
                                     <form action="{{ route('guru.destroy', $g->id) }}"
                                           method="POST"
                                           class="d-inline"
                                           onsubmit="return confirm('Apakah Anda yakin ingin menghapus data guru ini?')">
 
                                         @csrf
-
                                         @method('DELETE')
 
                                         <button type="submit"
-                                                class="btn btn-danger btn-sm">
+                                                class="btn btn-danger btn-sm mb-1">
 
                                             <i class="fas fa-trash me-1"></i>
-
                                             Hapus
 
                                         </button>
@@ -246,11 +216,10 @@
 
                             <tr>
 
-                                <td colspan="5"
+                                <td colspan="7"
                                     class="text-center text-muted py-4">
 
                                     <i class="fas fa-info-circle me-1"></i>
-
                                     Belum ada data guru.
 
                                 </td>
@@ -270,7 +239,6 @@
     </div>
 
 </div>
-
 
 {{-- AUTO HILANGKAN NOTIFIKASI SETELAH 5 DETIK --}}
 <script>

@@ -7,21 +7,35 @@ use Illuminate\Database\Eloquent\Model;
 
 class Guru extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'nama',
         'nip',
+        'telepon',
+        'email',
         'password',
-        'role'
+        'role',
     ];
 
     public function kelas()
     {
-        return $this->belongsToMany(Kelas::class,'guru_kelas','guru_id','kelas_id');
+        return $this->belongsToMany(
+            Kelas::class,
+            'guru_kelas',
+            'guru_id',
+            'kelas_id'
+        );
     }
 
     public function mapel()
     {
-        return $this->belongsToMany(Mapel::class,'guru_mapels','guru_id','mapel_id');
+        return $this->belongsToMany(
+            Mapel::class,
+            'guru_mapels',
+            'guru_id',
+            'mapel_id'
+        );
     }
 
     public function tujuanPembelajarans()

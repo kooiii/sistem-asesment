@@ -15,12 +15,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class RaporController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Daftar siswa untuk melihat rapor.
      */
     public function index()
     {
-        $guru = Guru::with(['kelas', 'mapel'])
-                    ->findOrFail(session('id'));
+        $role = session('role');
 
         $tahun = TahunAjaran::where('aktif', true)->first();
 
@@ -28,59 +27,145 @@ class RaporController extends Controller
             return back()->with('error', 'Tahun ajaran aktif belum tersedia.');
         }
 
-        $kelasIds = $guru->kelas->pluck('id');
+        $guru = null;
 
-        $mapelIds = $guru->mapel->pluck('id');
+        if ($role === 'admin') {
 
-        $siswas = Siswa::with('kelas')
-                        ->whereIn('kelas_id', $kelasIds)
-                        ->orderBy('nama')
-                        ->get();
+            // Admin dapat melihat seluruh siswa dan mata pelajaran.
+            $siswas = Siswa::with('kelas')
+                ->orderBy('nama')
+                ->get();
+
+            $mapels = Mapel::orderBy('nama_mapel')->get();
+
+        } elseif ($role === 'guru') {
+
+            $guru = Guru::with(['kelas', 'mapel'])
+                ->findOrFail(session('id'));
+
+            $kelasIds = $guru->kelas->pluck('id');
+
+            $siswas = Siswa::with('kelas')
+                ->whereIn('kelas_id', $kelasIds)
+                ->orderBy('nama')
+                ->get();
+
+            $mapels = $guru->mapel
+                ->sortBy('nama_mapel')
+                ->values();
+
+        } else {
+            abort(403);
+        }
 
         return view('rapor.index', compact(
             'guru',
             'tahun',
             'siswas',
-            'mapelIds'
+            'mapels'
         ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
-     * Store a newly created resource in storage.
+     * Menampilkan rapor siswa.
      */
-    public function store(Request $request)
+    public function show(Request $request, $id)
     {
-        //
+        $data = $this->getDataRapor($request, $id);
+
+        return view('rapor.show', $data);
     }
 
+
     /**
-     * Display the specified resource.
+     * Menghasilkan PDF rapor.
      */
-    public function show($id)
+    public function pdf(Request $request, $id)
     {
-        $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
+        $data = $this->getDataRapor($request, $id);
+
+        $pdf = Pdf::loadView('rapor.pdf', $data);
+
+        return $pdf->download(
+            'Rapor_' . $data['siswa']->nama . '.pdf'
+        );
+    }
+
+
+    /**
+     * Mengambil dan menghitung data rapor.
+     */
+    private function getDataRapor(Request $request, $id)
+    {
+        $role = session('role');
 
         $tahun = TahunAjaran::where('aktif', true)->firstOrFail();
 
         $siswa = Siswa::with('kelas')->findOrFail($id);
 
-        if (!$guru->kelas->pluck('id')->contains($siswa->kelas_id)) {
+        /*
+        |--------------------------------------------------------------------------
+        | MENENTUKAN MATA PELAJARAN DAN GURU
+        |--------------------------------------------------------------------------
+        */
+
+        if ($role === 'admin') {
+
+            // Admin memilih mapel melalui parameter URL.
+            $mapelId = $request->input('mapel_id');
+
+            if (!$mapelId) {
+                abort(400, 'Mata pelajaran harus dipilih.');
+            }
+
+            $mapel = Mapel::findOrFail($mapelId);
+
+            // Cari guru yang mengampu kelas dan mata pelajaran tersebut.
+            $guru = Guru::with(['kelas', 'mapel'])
+                ->whereHas('kelas', function ($query) use ($siswa) {
+                    $query->where('kelas.id', $siswa->kelas_id);
+                })
+                ->whereHas('mapel', function ($query) use ($mapel) {
+                    $query->where('mapel.id', $mapel->id);
+                })
+                ->first();
+
+            if (!$guru) {
+                abort(404, 'Guru pengampu mata pelajaran tidak ditemukan.');
+            }
+
+        } elseif ($role === 'guru') {
+
+            $guru = Guru::with(['kelas', 'mapel'])
+                ->findOrFail(session('id'));
+
+            // Pastikan siswa termasuk kelas yang diampu Guru.
+            if (!$guru->kelas->pluck('id')->contains($siswa->kelas_id)) {
+                abort(403);
+            }
+
+            // Gunakan mapel yang dipilih, atau konteks aktif Guru.
+            $mapelId = $request->input(
+                'mapel_id',
+                session('mapel_aktif')
+            );
+
+            if (!$mapelId) {
+                abort(400, 'Mata pelajaran belum dipilih.');
+            }
+
+            $mapel = Mapel::findOrFail($mapelId);
+
+            // Pastikan Guru mengampu mata pelajaran tersebut.
+            if (!$guru->mapel->pluck('id')->contains($mapel->id)) {
+                abort(403);
+            }
+
+        } else {
             abort(403);
         }
 
-        $mapel = Mapel::findOrFail(session('mapel_aktif'));
-
-        if (!$guru->mapel->pluck('id')->contains($mapel->id)) {
-            abort(403);
-        }
 
         /*
         |--------------------------------------------------------------------------
@@ -88,13 +173,14 @@ class RaporController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $formatif = NilaiFormatif::whereHas('tp', function ($q) use ($mapel, $siswa) {
-    $q->where('mapel_id', $mapel->id)
-      ->where('kelas_id', $siswa->kelas_id);
+        $formatif = NilaiFormatif::whereHas('tp', function ($query) use ($mapel, $siswa) {
+            $query->where('mapel_id', $mapel->id)
+                ->where('kelas_id', $siswa->kelas_id);
         })
-        ->where('siswa_id', $siswa->id)
-        ->where('tahun_ajaran_id', $tahun->id)
-        ->avg('nilai') ?? 0;
+            ->where('siswa_id', $siswa->id)
+            ->where('tahun_ajaran_id', $tahun->id)
+            ->avg('nilai') ?? 0;
+
 
         /*
         |--------------------------------------------------------------------------
@@ -109,6 +195,7 @@ class RaporController extends Controller
             'jenis' => 'STS'
         ])->value('nilai') ?? 0;
 
+
         /*
         |--------------------------------------------------------------------------
         | NILAI SAS
@@ -121,6 +208,7 @@ class RaporController extends Controller
             'tahun_ajaran_id' => $tahun->id,
             'jenis' => 'SAS'
         ])->value('nilai') ?? 0;
+
 
         /*
         |--------------------------------------------------------------------------
@@ -140,6 +228,7 @@ class RaporController extends Controller
             ($nilaiSikap + $nilaiPresensi) / 2,
             2
         );
+
 
         /*
         |--------------------------------------------------------------------------
@@ -148,22 +237,13 @@ class RaporController extends Controller
         */
 
         $nilaiAkhir = round(
-
-            ($formatif * 0.50)
-
-            +
-
-            ($sts * 0.15)
-
-            +
-
-            ($sas * 0.20)
-
-            +
-
+            ($formatif * 0.50) +
+            ($sts * 0.15) +
+            ($sas * 0.20) +
             ($nilaiSikapPresensi * 0.15),
+            2
+        );
 
-        2);
 
         /*
         |--------------------------------------------------------------------------
@@ -172,22 +252,15 @@ class RaporController extends Controller
         */
 
         if ($nilaiAkhir >= 90) {
-
             $predikat = 'A';
-
         } elseif ($nilaiAkhir >= 80) {
-
             $predikat = 'B';
-
         } elseif ($nilaiAkhir >= 70) {
-
             $predikat = 'C';
-
         } else {
-
             $predikat = 'D';
-
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -196,182 +269,6 @@ class RaporController extends Controller
         */
 
         switch ($predikat) {
-
-            case 'A':
-                $deskripsi = 'Sangat Baik';
-                break;
-
-            case 'B':
-                $deskripsi = 'Baik';
-                break;
-
-            case 'C':
-                $deskripsi = 'Cukup';
-                break;
-
-            default:
-                $deskripsi = 'Perlu Bimbingan';
-
-        }
-
-        return view(
-            'rapor.show',
-            compact(
-                'guru',
-                'tahun',
-                'siswa',
-                'mapel',
-                'formatif',
-                'sts',
-                'sas',
-                'sikap',
-                'nilaiSikapPresensi',
-                'nilaiAkhir',
-                'predikat',
-                'deskripsi'
-            )
-        );
-    }
-
-    public function pdf($id)
-    {
-        $guru = Guru::with(['kelas','mapel'])->findOrFail(session('id'));
-
-        $tahun = TahunAjaran::where('aktif', true)->firstOrFail();
-
-        $siswa = Siswa::with('kelas')->findOrFail($id);
-
-        if (!$guru->kelas->pluck('id')->contains($siswa->kelas_id)) {
-            abort(403);
-        }
-
-        $mapel = Mapel::findOrFail(session('mapel_aktif'));
-
-        if (!$guru->mapel->pluck('id')->contains($mapel->id)) {
-            abort(403);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | NILAI FORMATIF
-        |--------------------------------------------------------------------------
-        */
-
-        $formatif = NilaiFormatif::whereHas('tp', function ($q) use ($mapel, $siswa) {
-            $q->where('mapel_id', $mapel->id)
-            ->where('kelas_id', $siswa->kelas_id);
-        })
-        ->where('siswa_id', $siswa->id)
-        ->where('tahun_ajaran_id', $tahun->id)
-        ->avg('nilai') ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | NILAI STS
-        |--------------------------------------------------------------------------
-        */
-
-        $sts = NilaiSumatif::where([
-            'siswa_id' => $siswa->id,
-            'mapel_id' => $mapel->id,
-            'tahun_ajaran_id' => $tahun->id,
-            'jenis' => 'STS'
-        ])->value('nilai') ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | NILAI SAS
-        |--------------------------------------------------------------------------
-        */
-
-        $sas = NilaiSumatif::where([
-            'siswa_id' => $siswa->id,
-            'mapel_id' => $mapel->id,
-            'tahun_ajaran_id' => $tahun->id,
-            'jenis' => 'SAS'
-        ])->value('nilai') ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | SIKAP DAN PRESENSI
-        |--------------------------------------------------------------------------
-        */
-
-        $sikap = SikapPresensi::where([
-            'siswa_id' => $siswa->id,
-            'tahun_ajaran_id' => $tahun->id
-        ])->first();
-
-        $nilaiSikap = $sikap->sikap ?? 0;
-
-        $nilaiPresensi = $sikap->presensi ?? 0;
-
-        $nilaiSikapPresensi = round(
-
-            ($nilaiSikap + $nilaiPresensi) / 2,
-
-            2
-
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | NILAI AKHIR
-        |--------------------------------------------------------------------------
-        */
-
-        $nilaiAkhir = round(
-
-            ($formatif * 0.50)
-
-            +
-
-            ($sts * 0.15)
-
-            +
-
-            ($sas * 0.20)
-
-            +
-
-            ($nilaiSikapPresensi * 0.15),
-
-            2
-
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | PREDIKAT
-        |--------------------------------------------------------------------------
-        */
-
-        if ($nilaiAkhir >= 90) {
-
-            $predikat = 'A';
-
-        } elseif ($nilaiAkhir >= 80) {
-
-            $predikat = 'B';
-
-        } elseif ($nilaiAkhir >= 70) {
-
-            $predikat = 'C';
-
-        } else {
-
-            $predikat = 'D';
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DESKRIPSI
-        |--------------------------------------------------------------------------
-        */
-
-        switch ($predikat) {
-
             case 'A':
                 $deskripsi = 'Sangat Baik';
                 break;
@@ -387,53 +284,22 @@ class RaporController extends Controller
             default:
                 $deskripsi = 'Perlu Bimbingan';
                 break;
-
         }
 
-        $pdf = Pdf::loadView(
-            'rapor.pdf',
-            compact(
-                'guru',
-                'tahun',
-                'siswa',
-                'mapel',
-                'formatif',
-                'sts',
-                'sas',
-                'sikap',
-                'nilaiSikapPresensi',
-                'nilaiAkhir',
-                'predikat',
-                'deskripsi'
-            )
+
+        return compact(
+            'guru',
+            'tahun',
+            'siswa',
+            'mapel',
+            'formatif',
+            'sts',
+            'sas',
+            'sikap',
+            'nilaiSikapPresensi',
+            'nilaiAkhir',
+            'predikat',
+            'deskripsi'
         );
-
-        return $pdf->download(
-            'Rapor_'.$siswa->nama.'.pdf'
-        );
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

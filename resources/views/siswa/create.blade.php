@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -12,62 +13,125 @@
 
         <div class="card-body">
 
+            {{-- NOTIFIKASI ERROR --}}
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Data siswa gagal disimpan!</strong>
+
+                    <ul class="mb-0 mt-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('siswa.store') }}" method="POST">
 
                 @csrf
 
+                {{-- NIS --}}
                 <div class="mb-3">
-                    <label class="form-label">NIS</label>
+
+                    <label for="nis" class="form-label">
+                        NIS
+                    </label>
+
                     <input
                         type="text"
                         name="nis"
-                        class="form-control"
+                        id="nis"
+                        class="form-control @error('nis') is-invalid @enderror"
                         value="{{ old('nis') }}"
-                        required>
+                        placeholder="Masukkan NIS siswa"
+                        required
+                    >
+
+                    @error('nis')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
                 </div>
 
+                {{-- NAMA --}}
                 <div class="mb-3">
-                    <label class="form-label">Nama Siswa</label>
+
+                    <label for="nama" class="form-label">
+                        Nama Siswa
+                    </label>
+
                     <input
                         type="text"
                         name="nama"
-                        class="form-control"
+                        id="nama"
+                        class="form-control @error('nama') is-invalid @enderror"
                         value="{{ old('nama') }}"
-                        required>
+                        placeholder="Masukkan nama lengkap siswa"
+                        required
+                    >
+
+                    @error('nama')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
                 </div>
 
+                {{-- KELAS --}}
                 <div class="mb-3">
-                    <label class="form-label">Kelas</label>
+
+                    <label for="kelas_id" class="form-label">
+                        Kelas
+                    </label>
 
                     <select
                         name="kelas_id"
-                        class="form-select"
-                        required>
+                        id="kelas_id"
+                        class="form-select @error('kelas_id') is-invalid @enderror"
+                        required
+                    >
 
-                        <option value="">-- Pilih Kelas --</option>
+                        <option value="">
+                            -- Pilih Kelas --
+                        </option>
 
                         @foreach($kelas as $k)
+
                             <option
                                 value="{{ $k->id }}"
-                                {{ old('kelas_id')==$k->id?'selected':'' }}>
+                                {{ old('kelas_id') == $k->id ? 'selected' : '' }}
+                            >
                                 {{ $k->nama_kelas }}
                             </option>
+
                         @endforeach
 
                     </select>
 
+                    @error('kelas_id')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
                 </div>
 
+                {{-- TOMBOL --}}
                 <div class="text-end">
 
                     <a href="{{ route('siswa.index') }}"
-                        class="btn btn-secondary">
+                       class="btn btn-secondary">
                         Kembali
                     </a>
 
                     <button
                         type="submit"
-                        class="btn btn-primary">
+                        class="btn btn-primary"
+                    >
+                        <i class="fa fa-save"></i>
                         Simpan
                     </button>
 

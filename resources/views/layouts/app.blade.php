@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Sistem Penilaian SMK</title>
 
@@ -13,264 +14,270 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-
-        
-        /* Menu submenu Penilaian Sumatif */
-        .sidebar .sumatif-menu .submenu {
-            padding-left: 40px;
-            font-size: 14px;
-            background: #263445;
+        body {
+            background: #f4f6f9;
         }
 
-        .sidebar .sumatif-menu .submenu:hover {
-            background: #2563eb;
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #1f2937;
+            color: white;
+            overflow-y: auto;
         }
 
-        /* Tampilan menu sumatif tetap sama dengan menu lainnya */
-        .sidebar .sumatif-menu > a {
-            display: block;
+        .sidebar h4 {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+
+        .sidebar a {
             color: white;
             text-decoration: none;
+            display: block;
             padding: 13px 20px;
         }
 
-        .sidebar .sumatif-menu > a:hover {
+        .sidebar a:hover {
             background: #2563eb;
         }
 
-
-        body{
-            background:#f4f6f9;
-        }
-
-        .sidebar{
-
-            width:250px;
-            height:100vh;
-            position:fixed;
-            left:0;
-            top:0;
-            background:#1f2937;
-            color:white;
-            overflow-y:auto;
-        }
-
-        .sidebar h4{
-
-            padding:20px;
-            text-align:center;
-            border-bottom:1px solid rgba(255,255,255,.1);
-
-        }
-
-        .sidebar a{
-
-            color:white;
-            text-decoration:none;
-
-            display:block;
-
-            padding:13px 20px;
-
-        }
-
-        .sidebar a:hover{
-
-            background:#2563eb;
-
-        }
-
-        .sidebar a.active{
-            background:#2563eb;
-            color:white;
+        .sidebar a.active {
+            background: #2563eb;
+            color: white;
             font-weight: bold;
             border-left: 5px solid #60a5fa;
         }
 
-        .sidebar a i{
-            width:20px;
+        .sidebar .menu-label {
+            padding: 15px 20px 5px;
+            color: #9ca3af;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .content{
-
-            margin-left:250px;
-            padding:25px;
-            min-height:100vh;
-            background:#f4f6f9;
-
+        .sidebar .sumatif-menu .submenu {
+            padding: 10px 20px 10px 40px;
+            font-size: 14px;
+            background: #263445;
         }
 
-        .topbar{
-
-            background:white;
-
-            padding:15px;
-
-            border-radius:10px;
-
-            margin-bottom:20px;
-
-            box-shadow:0 2px 6px rgba(0,0,0,.1);
-
+        .content {
+            margin-left: 250px;
+            padding: 25px;
+            min-height: 100vh;
+            background: #f4f6f9;
         }
 
-        .card-custom{
-
-            border:none;
-            border-radius:10px;
-            box-shadow:0 3px 10px rgba(0,0,0,.08);
-
+        .topbar {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.1);
         }
 
+        .card-custom {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,.08);
+        }
     </style>
-
 </head>
 
 <body>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <div class="sidebar">
 
-     <h4 class="text-center py-3">
-        Sistem Informasi Manajemen</h4>
-        <hr class="text-secondary">
+    <h4 class="text-center py-3">
+        Sistem Informasi Manajemen
+    </h4>
 
-        <a href="{{ route('dashboard') }}"
-        class="{{ request()->routeIs('dashboard') ?'active':'' }}">Dashboard</a>
+    <hr class="text-secondary">
 
-    @if(session('role') ==='guru' && isset($guru))
-
-<div class="px-3 mb-3">
-
-    <label class="text-light mb-1">Kelas Diampu</label>
-
-    <select class="form-select mb-3">
-        @foreach($guru->kelas as $kelas)
-            <option value="{{ $kelas->id }}">
-                {{ $kelas->nama_kelas }}
-            </option>
-        @endforeach
-    </select>
-
-    <label class="text-light mb-1">Mapel Diampu</label>
-
-    <select class="form-select">
-        @foreach($guru->mapel as $mapel)
-            <option value="{{ $mapel->id }}">
-                {{ $mapel->nama_mapel }}
-            </option>
-        @endforeach
-    </select>
-</div>
-@endif
-
-    @if(session('role') ==='admin')
-
-<a href="{{ route('guru.index') }}"
-class="{{ request()->routeIs('guru.*') ?'active':'' }}">
-Data Guru
-</a>
-
-<a href="{{ route('siswa.index') }}"
-class="{{ request()->routeIs('siswa.*') ?'active':'' }}">
-Data Siswa
-</a>
-
-<a href="{{ route('kelas.index') }}"
-class="{{ request()->routeIs('kelas.*') ?'active':'' }}">
-Data Kelas
-</a>
-
-<a href="{{ route('mapel.index') }}"
-class="{{ request()->routeIs('mapel.*') ?'active':'' }}">
-Mata Pelajaran
-</a>
-
-<a href="{{ route('logout') }}">
-Logout
-</a>
-
-
-@else
-
-<a href="{{ route('tujuan-pembelajaran.index') }}"
-class="{{ request()->routeIs('tujuan-pembelajaran.*') ? 'active' : '' }}">
-Penilaian Formatif
-</a>
-
-<div class="sumatif-menu">
-    <a href="#sumatifMenu"
-       data-bs-toggle="collapse"
-       role="button"
-       aria-expanded="{{ request()->routeIs('nilai-sumatif.*') ? 'true' : 'false' }}"
-       aria-controls="sumatifMenu">
-        Penilaian Sumatif
+    <a href="{{ route('dashboard') }}"
+       class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        Dashboard
     </a>
 
-    <div class="collapse {{ request()->routeIs('nilai-sumatif.*') ? 'show' : '' }}"
-         id="sumatifMenu">
 
-        <a class="submenu"
-           href="{{ route('nilai-sumatif.index') }}">
-            STS
+    {{-- MENU ADMIN --}}
+    @if(session('role') === 'admin')
+
+        <div class="menu-label">Pengelolaan Data</div>
+
+        <a href="{{ route('guru.index') }}"
+           class="{{ request()->routeIs('guru.*') ? 'active' : '' }}">
+            <i class="fas fa-chalkboard-teacher me-2"></i>
+            Data Guru
         </a>
 
-        <a class="submenu"
-           href="{{ route('nilai-sumatif.index') }}">
-            SAS
+        <a href="{{ route('siswa.index') }}"
+           class="{{ request()->routeIs('siswa.*') ? 'active' : '' }}">
+            <i class="fas fa-user-graduate me-2"></i>
+            Data Siswa
         </a>
 
-    </div>
+        <a href="{{ route('kelas.index') }}"
+           class="{{ request()->routeIs('kelas.*') ? 'active' : '' }}">
+            <i class="fas fa-school me-2"></i>
+            Data Kelas
+        </a>
+
+        <a href="{{ route('mapel.index') }}"
+           class="{{ request()->routeIs('mapel.*') ? 'active' : '' }}">
+            <i class="fas fa-book me-2"></i>
+            Mata Pelajaran
+        </a>
+
+        <div class="menu-label">Monitoring Akademik</div>
+
+        <a href="{{ route('laporan.index') }}"
+           class="{{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+            <i class="fas fa-chart-bar me-2"></i>
+            Rekap Nilai
+        </a>
+
+        <a href="{{ route('logout') }}">
+            <i class="fas fa-sign-out-alt me-2"></i>
+            Logout
+        </a>
+
+
+    {{-- MENU GURU --}}
+    @elseif(session('role') === 'guru')
+
+        @if(isset($guru))
+
+            <div class="px-3 mb-3">
+
+                <label class="text-light mb-1">Kelas Diampu</label>
+
+                <select class="form-select mb-3">
+                    @foreach($guru->kelas as $kelas)
+                        <option value="{{ $kelas->id }}">
+                            {{ $kelas->nama_kelas }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <label class="text-light mb-1">Mapel Diampu</label>
+
+                <select class="form-select">
+                    @foreach($guru->mapel as $mapel)
+                        <option value="{{ $mapel->id }}">
+                            {{ $mapel->nama_mapel }}
+                        </option>
+                    @endforeach
+                </select>
+
+            </div>
+
+        @endif
+
+        <div class="menu-label">Penilaian</div>
+
+        <a href="{{ route('tujuan-pembelajaran.index') }}"
+           class="{{ request()->routeIs('tujuan-pembelajaran.*') ? 'active' : '' }}">
+            <i class="fas fa-bullseye me-2"></i>
+            Penilaian Formatif
+        </a>
+
+        <div class="sumatif-menu">
+
+            <a href="#sumatifMenu"
+               data-bs-toggle="collapse"
+               role="button"
+               aria-expanded="{{ request()->routeIs('nilai-sumatif.*') ? 'true' : 'false' }}"
+               aria-controls="sumatifMenu">
+                <i class="fas fa-clipboard-check me-2"></i>
+                Penilaian Sumatif
+            </a>
+
+            <div class="collapse {{ request()->routeIs('nilai-sumatif.*') ? 'show' : '' }}"
+                 id="sumatifMenu">
+
+                <a class="submenu"
+                   href="{{ route('nilai-sumatif.index') }}">
+                    STS
+                </a>
+
+                <a class="submenu"
+                   href="{{ route('nilai-sumatif.index') }}">
+                    SAS
+                </a>
+
+            </div>
+
+        </div>
+
+        <a href="{{ route('presensi.index') }}"
+           class="{{ request()->routeIs('presensi.*') ? 'active' : '' }}">
+            <i class="fas fa-calendar-check me-2"></i>
+            Presensi & Sikap
+        </a>
+
+        <div class="menu-label">Laporan Akademik</div>
+
+        <a href="{{ route('laporan.index') }}"
+           class="{{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+            <i class="fas fa-chart-bar me-2"></i>
+            Rekap Nilai
+        </a>
+
+        <a href="{{ route('rapor.index') }}"
+           class="{{ request()->routeIs('rapor.*') ? 'active' : '' }}">
+            <i class="fas fa-file-alt me-2"></i>
+            Rapor
+        </a>
+
+        <a href="{{ route('logout') }}">
+            <i class="fas fa-sign-out-alt me-2"></i>
+            Logout
+        </a>
+
+    @endif
+
 </div>
 
-<a href="{{ route('presensi.index') }}"
-class="{{ request()->routeIs('presensi.*') ? 'active' : '' }}">
-Presensi & Sikap
-</a>
-
-<a href="{{ route('laporan.index') }}"
-class="{{ request()->routeIs('laporan.*') ? 'active' : '' }}">
-Rekap Nilai
-</a>
-
-<a href="{{ route('rapor.index') }}"
-class="{{ request()->routeIs('rapor.*') ? 'active' : '' }}">
-Rapor
-</a>
-
-<a href="{{ route('logout') }}">
-Logout
-</a>
-
-@endif
-
-
-</div>
 
 <div class="content">
 
-<div class="topbar d-flex justify-content-between align-items-center">
+    <div class="topbar d-flex justify-content-between align-items-center">
 
-    <div>
-        <h4>Sistem Informasi Manajemen SMK Negeri 1 Sungai Tebelian</h4>
-        <small>Selamat datang, <strong>{{ session('nama') }}</strong></small>
+        <div>
+            <h4>
+                Sistem Informasi Manajemen SMK Negeri 1 Sungai Tebelian
+            </h4>
+
+            <small>
+                Selamat datang,
+                <strong>{{ session('nama') }}</strong>
+            </small>
+        </div>
+
+        <div>
+            <span class="badge bg-primary">
+                {{ ucfirst(session('role')) }}
+            </span>
+        </div>
+
     </div>
-
-    <div>
-        <span class="badge bg-primary">
-            {{ session('role') }}
-        </span>
-    </div>
-</div>
-    
-
-
 
     @yield('content')
 
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 @stack('scripts')
+
 </body>
 </html>

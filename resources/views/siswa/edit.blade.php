@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -7,15 +8,15 @@
     <div class="card shadow">
 
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Edit Siswa</h4>
+            <h4 class="mb-0">Edit Data Siswa</h4>
         </div>
 
         <div class="card-body">
 
-            {{-- Pesan error validasi --}}
+            {{-- NOTIFIKASI ERROR --}}
             @if ($errors->any())
                 <div class="alert alert-danger">
-                    <strong>Terjadi kesalahan:</strong>
+                    <strong>Data siswa gagal diperbarui!</strong>
 
                     <ul class="mb-0 mt-2">
                         @foreach ($errors->all() as $error)
@@ -25,7 +26,8 @@
                 </div>
             @endif
 
-            <form action="{{ route('siswa.update', $siswa->id) }}" method="POST">
+            <form action="{{ route('siswa.update', $siswa->id) }}"
+                  method="POST">
 
                 @csrf
                 @method('PUT')
@@ -54,7 +56,6 @@
 
                 </div>
 
-
                 {{-- NAMA --}}
                 <div class="mb-3">
 
@@ -79,7 +80,6 @@
 
                 </div>
 
-
                 {{-- KELAS --}}
                 <div class="mb-3">
 
@@ -90,7 +90,7 @@
                     <select
                         name="kelas_id"
                         id="kelas_id"
-                        class="form-control @error('kelas_id') is-invalid @enderror"
+                        class="form-select @error('kelas_id') is-invalid @enderror"
                         required
                     >
 
@@ -119,9 +119,7 @@
 
                 </div>
 
-
                 {{-- TOMBOL --}}
-
                 <button
                     type="submit"
                     class="btn btn-primary"
@@ -130,10 +128,8 @@
                     Update
                 </button>
 
-                <a
-                    href="{{ route('siswa.index') }}"
-                    class="btn btn-secondary"
-                >
+                <a href="{{ route('siswa.index') }}"
+                   class="btn btn-secondary">
                     Kembali
                 </a>
 

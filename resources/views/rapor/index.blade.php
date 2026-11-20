@@ -1,75 +1,102 @@
+
 @extends('layouts.app')
 
 @section('content')
 
 <div class="container">
 
-    <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <h3>Rapor Semester</h3>
+        <div>
+            <h3>Rapor Semester</h3>
+            <small class="text-muted">
+                Tahun Ajaran: {{ $tahun->tahun_ajaran }}
+                - Semester {{ $tahun->semester }}
+            </small>
+        </div>
 
-        <a href="{{ route('dashboard') }}"
-           class="btn btn-secondary">
-
+        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
             ← Kembali
-
         </a>
 
     </div>
 
-    <div class="card">
+    <div class="card card-custom">
 
         <div class="card-body">
 
-            <table class="table table-bordered">
+            <div class="table-responsive">
 
-                <thead>
+                <table class="table table-bordered table-striped align-middle">
 
-                    <tr>
+                    <thead class="table-light">
 
-                        <th>No</th>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Siswa</th>
+                            <th>Kelas</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Aksi</th>
+                        </tr>
 
-                        <th>Nama Siswa</th>
+                    </thead>
 
-                        <th>Kelas</th>
+                    <tbody>
 
-                        <th>Aksi</th>
+                        @forelse($siswas as $siswa)
 
-                    </tr>
+                            @forelse($mapels as $mapel)
 
-                </thead>
+                                <tr>
 
-                <tbody>
+                                    <td>{{ $loop->parent->iteration }}</td>
 
-                    @foreach($siswas as $siswa)
+                                    <td>{{ $siswa->nama }}</td>
 
-                    <tr>
+                                    <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
 
-                        <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $mapel->nama_mapel }}</td>
 
-                        <td>{{ $siswa->nama }}</td>
+                                    <td>
+                                        <a href="{{ route('rapor.show', [
+                                            'rapor' => $siswa->id,
+                                            'mapel_id' => $mapel->id
+                                        ]) }}"
+                                           class="btn btn-primary btn-sm">
 
-                        <td>{{ $siswa->kelas->nama_kelas }}</td>
+                                            <i class="fa fa-file-text"></i>
+                                            Lihat Rapor
 
-                        <td>
+                                        </a>
+                                    </td>
 
-                            <a href="{{ route('rapor.show',$siswa->id) }}"
-                                class="btn btn-primary btn-sm">
+                                </tr>
 
-                                    <i class="fa fa-file-text"></i>
-                                    Lihat Rapor
+                            @empty
 
-                                </a>
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        Belum ada mata pelajaran.
+                                    </td>
+                                </tr>
 
-                        </td>
+                            @endforelse
 
-                    </tr>
+                        @empty
 
-                    @endforeach
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    Belum ada data siswa.
+                                </td>
+                            </tr>
 
-                </tbody>
+                        @endforelse
 
-            </table>
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </div>
 
