@@ -23,9 +23,14 @@ use App\Models\Siswa;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [AuthController::class, 'showLogin']);
-Route::get('/login', [AuthController::class, 'showLogin']);
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
