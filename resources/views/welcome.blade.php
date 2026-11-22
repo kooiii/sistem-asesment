@@ -4,30 +4,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Sistem Penilaian Akademik | SMK Negeri 1 Sungai Tebelian</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
+        /* RESET CSS */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
+            width: 100%;
             font-family: 'Poppins', sans-serif;
             background: #f8fafc;
             color: #172554;
+            overflow-x: hidden;
         }
 
+        /* NAVBAR */
         .navbar {
             width: 100%;
-            padding: 20px 8%;
+            padding: 16px 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
             background: #ffffff;
             box-shadow: 0 2px 15px rgba(0,0,0,0.04);
             position: relative;
@@ -38,18 +48,17 @@
             display: flex;
             align-items: center;
             gap: 13px;
+            min-width: 0;
         }
 
-        .brand-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 13px;
-            background: #123c75;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 23px;
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            flex-shrink: 0;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 3px;
         }
 
         .brand h3 {
@@ -61,9 +70,11 @@
         .brand p {
             font-size: 11px;
             color: #64748b;
+            margin-top: 4px;
         }
 
         .nav-login {
+            flex-shrink: 0;
             text-decoration: none;
             background: #123c75;
             color: white;
@@ -79,13 +90,15 @@
             transform: translateY(-2px);
         }
 
+        /* HERO */
         .hero {
+            width: 100%;
             min-height: 570px;
             padding: 75px 8%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 50px;
+            gap: 55px;
             background:
                 radial-gradient(circle at 85% 20%, rgba(96,165,250,.22), transparent 25%),
                 linear-gradient(120deg, #0c2852, #164b87);
@@ -94,6 +107,8 @@
         }
 
         .hero-content {
+            flex: 1;
+            min-width: 0;
             max-width: 650px;
         }
 
@@ -109,7 +124,7 @@
         }
 
         .hero h1 {
-            font-size: clamp(30px, 4.5vw, 49px);
+            font-size: clamp(30px, 4vw, 49px);
             line-height: 1.3;
             font-weight: 800;
             margin-bottom: 22px;
@@ -166,64 +181,35 @@
             background: rgba(255,255,255,.1);
         }
 
+        /* LOGO PADA HERO */
         .hero-visual {
-            width: 390px;
-            min-width: 300px;
-            height: 340px;
+            flex: 0 0 390px;
+            max-width: 390px;
+            min-width: 0;
+            min-height: 340px;
             border-radius: 25px;
             background: rgba(255,255,255,.1);
             border: 1px solid rgba(255,255,255,.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
             box-shadow: 0 25px 60px rgba(0,0,0,.18);
+            padding: 25px;
         }
 
-        .visual-card {
-            width: 78%;
+        .hero-logo {
+            display: block;
+            width: 100%;
+            max-width: 280px;
+            height: 280px;
+            object-fit: contain;
             background: white;
-            color: #123c75;
-            padding: 28px;
+            padding: 12px;
             border-radius: 18px;
             box-shadow: 0 15px 35px rgba(0,0,0,.15);
         }
 
-        .visual-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 14px;
-            background: #dbeafe;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 25px;
-            margin-bottom: 17px;
-        }
-
-        .visual-card h3 {
-            font-size: 17px;
-            margin-bottom: 7px;
-        }
-
-        .visual-card p {
-            font-size: 11px;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
-
-        .visual-line {
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .visual-line.short {
-            width: 65%;
-            background: #93c5fd;
-        }
-
+        /* FITUR */
         .features {
             padding: 75px 8%;
             text-align: center;
@@ -253,7 +239,7 @@
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 23px;
             margin-top: 45px;
             text-align: left;
@@ -297,6 +283,7 @@
             color: #64748b;
         }
 
+        /* CTA */
         .cta {
             margin: 0 8% 75px;
             padding: 45px;
@@ -317,6 +304,7 @@
             margin-bottom: 25px;
         }
 
+        /* FOOTER */
         footer {
             padding: 25px 8%;
             text-align: center;
@@ -326,11 +314,17 @@
             line-height: 1.8;
         }
 
-        @media(max-width: 900px) {
+        /* TABLET */
+        @media (max-width: 900px) {
             .hero {
                 flex-direction: column;
                 text-align: center;
-                padding-top: 65px;
+                padding: 65px 7%;
+                gap: 40px;
+            }
+
+            .hero-content {
+                width: 100%;
             }
 
             .hero-content > p {
@@ -343,40 +337,70 @@
             }
 
             .hero-visual {
+                flex: none;
                 width: 100%;
                 max-width: 390px;
+                min-height: 320px;
             }
 
             .feature-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
-        @media(max-width: 600px) {
+        /* HP */
+        @media (max-width: 600px) {
             .navbar {
-                padding: 15px 5%;
+                padding: 14px 5%;
+                gap: 10px;
+            }
+
+            .brand {
+                gap: 9px;
+            }
+
+            .brand-logo {
+                width: 43px;
+                height: 43px;
             }
 
             .brand h3 {
-                font-size: 12px;
+                font-size: 10px;
             }
 
             .brand p {
-                font-size: 9px;
+                font-size: 8px;
             }
 
             .nav-login {
-                padding: 10px 14px;
-                font-size: 11px;
+                padding: 9px 12px;
+                font-size: 10px;
             }
 
             .hero {
-                padding: 55px 6%;
+                padding: 50px 6%;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero-label {
+                font-size: 10px;
+            }
+
+            .hero-content > p {
+                font-size: 12px;
             }
 
             .hero-visual {
-                min-width: unset;
-                height: 290px;
+                min-height: 280px;
+                padding: 20px;
+            }
+
+            .hero-logo {
+                max-width: 230px;
+                height: 230px;
             }
 
             .feature-grid {
@@ -408,9 +432,10 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="brand">
-            <div class="brand-icon">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
+            <img
+                src="{{ asset('images/logo-sekolah.png') }}"
+                alt="Logo SMK Negeri 1 Sungai Tebelian"
+                class="brand-logo">
 
             <div>
                 <h3>SMK NEGERI 1 SUNGAI TEBELIAN</h3>
@@ -425,7 +450,9 @@
 
     <!-- HERO -->
     <section class="hero">
+
         <div class="hero-content">
+
             <div class="hero-label">
                 <i class="fas fa-laptop-code"></i>
                 SISTEM INFORMASI AKADEMIK SEKOLAH
@@ -455,27 +482,22 @@
                     Pelajari Fitur
                 </a>
             </div>
+
         </div>
 
+        <!-- LOGO SEKOLAH -->
         <div class="hero-visual">
-            <div class="visual-card">
-                <div class="visual-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-
-                <h3>Penilaian Akademik</h3>
-                <p>Pengelolaan hasil belajar siswa secara digital.</p>
-
-                <div class="visual-line"></div>
-                <div class="visual-line short"></div>
-                <div class="visual-line"></div>
-                <div class="visual-line short"></div>
-            </div>
+            <img
+                src="{{ asset('images/logo-sekolah.png') }}"
+                alt="Logo SMK Negeri 1 Sungai Tebelian"
+                class="hero-logo">
         </div>
+
     </section>
 
     <!-- FITUR -->
     <section class="features" id="fitur">
+
         <div class="section-label">Fitur Sistem</div>
 
         <h2>Pengelolaan Penilaian Lebih Mudah</h2>
@@ -558,6 +580,7 @@
 
     <!-- CTA -->
     <section class="cta">
+
         <h2>Mulai Gunakan Sistem Penilaian Akademik</h2>
 
         <p>
@@ -569,6 +592,7 @@
             Login ke Sistem
             <i class="fas fa-arrow-right"></i>
         </a>
+
     </section>
 
     <!-- FOOTER -->
