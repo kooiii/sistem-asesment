@@ -1,22 +1,20 @@
+
 @extends('layouts.app')
 
 @section('content')
 
-<div class="container">
+<div class="container-fluid">
 
     <div class="card shadow">
 
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">
-                Penilaian Formatif
-            </h4>
+            <h4 class="mb-0">Penilaian Formatif</h4>
         </div>
 
         <div class="card-body">
 
             {{-- INFORMASI TP --}}
             <div class="mb-4">
-
                 <h5>
                     TP {{ $tp->nomor_tp }} -
                     {{ $tp->judul_tp }}
@@ -31,52 +29,38 @@
                     <strong>Mata Pelajaran:</strong>
                     {{ $tp->mapel->nama_mapel }}
                 </p>
-
             </div>
 
             {{-- PESAN SUCCESS --}}
             @if(session('success'))
-
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle"></i>
                     {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-
             @endif
 
             {{-- PESAN ERROR --}}
             @if(session('error'))
-
                 <div class="alert alert-danger">
                     {{ session('error') }}
                 </div>
-
             @endif
 
             {{-- VALIDASI ERROR --}}
             @if($errors->any())
-
                 <div class="alert alert-danger">
-
-                    <ul class="mb-0">
-
+                    <strong>Terjadi kesalahan:</strong>
+                    <ul class="mb-0 mt-2">
                         @foreach($errors->all() as $error)
-
                             <li>{{ $error }}</li>
-
                         @endforeach
-
                     </ul>
-
                 </div>
-
             @endif
 
-
             {{-- FORM NILAI --}}
-            <form
-                action="{{ route('nilai-formatif.store') }}"
-                method="POST">
-
+            <form action="{{ route('nilai-formatif.store') }}" method="POST">
                 @csrf
 
                 <input
@@ -85,69 +69,36 @@
                     value="{{ $tp->id }}">
 
                 <div class="table-responsive">
-
                     <table class="table table-bordered table-hover align-middle">
 
                         <thead class="table-primary">
-
                             <tr>
-
-                                <th width="50">
-                                    No
-                                </th>
-
-                                <th>
-                                    Nama Siswa
-                                </th>
-
-                                <th width="120">
-                                    Tugas
-                                </th>
-
-                                <th width="120">
-                                    Kuis
-                                </th>
-
-                                <th width="120">
-                                    Praktik
-                                </th>
-
-                                <th width="120">
-                                    Presentasi
-                                </th>
-
-                                <th width="120">
-                                    Rata-rata
-                                </th>
-
+                                <th width="50">No</th>
+                                <th>Nama Siswa</th>
+                                <th width="120">Tugas</th>
+                                <th width="120">Kuis</th>
+                                <th width="120">Praktik</th>
+                                <th width="120">Presentasi</th>
+                                <th width="120">Rata-rata</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
-
                             @forelse($siswas as $siswa)
-
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
 
                                     <td>
-                                        {{ $loop->iteration }}
-                                    </td>
-
-                                    <td>
-
                                         {{ $siswa->nama }}
 
                                         <input
                                             type="hidden"
                                             name="siswa_id[]"
                                             value="{{ $siswa->id }}">
-
                                     </td>
 
                                     {{-- TUGAS --}}
                                     <td>
-
                                         <input
                                             type="number"
                                             name="tugas[]"
@@ -155,13 +106,11 @@
                                             min="0"
                                             max="100"
                                             step="0.01"
-                                            value="{{ $siswa->tugas }}">
-
+                                            value="{{ old('tugas.'.$loop->index, $siswa->tugas) }}">
                                     </td>
 
                                     {{-- KUIS --}}
                                     <td>
-
                                         <input
                                             type="number"
                                             name="kuis[]"
@@ -169,13 +118,11 @@
                                             min="0"
                                             max="100"
                                             step="0.01"
-                                            value="{{ $siswa->kuis }}">
-
+                                            value="{{ old('kuis.'.$loop->index, $siswa->kuis) }}">
                                     </td>
 
                                     {{-- PRAKTIK --}}
                                     <td>
-
                                         <input
                                             type="number"
                                             name="praktik[]"
@@ -183,13 +130,11 @@
                                             min="0"
                                             max="100"
                                             step="0.01"
-                                            value="{{ $siswa->praktik }}">
-
+                                            value="{{ old('praktik.'.$loop->index, $siswa->praktik) }}">
                                     </td>
 
                                     {{-- PRESENTASI --}}
                                     <td>
-
                                         <input
                                             type="number"
                                             name="presentasi[]"
@@ -197,79 +142,52 @@
                                             min="0"
                                             max="100"
                                             step="0.01"
-                                            value="{{ $siswa->presentasi }}">
-
+                                            value="{{ old('presentasi.'.$loop->index, $siswa->presentasi) }}">
                                     </td>
 
                                     {{-- RATA-RATA --}}
                                     <td>
-
                                         <span class="rata-rata">
                                             {{ $siswa->rata ?? '-' }}
                                         </span>
-
                                     </td>
-
                                 </tr>
 
                             @empty
-
                                 <tr>
-
-                                    <td
-                                        colspan="7"
-                                        class="text-center">
-
+                                    <td colspan="7" class="text-center">
                                         Belum ada siswa pada kelas ini.
-
                                     </td>
-
                                 </tr>
-
                             @endforelse
-
                         </tbody>
 
                     </table>
-
                 </div>
 
-
                 @if($siswas->count() > 0)
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-
-                        <i class="fa fa-save"></i>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
                         Simpan Semua
-
                     </button>
-
                 @endif
 
                 <a
                     href="{{ route('tujuan-pembelajaran.index') }}"
                     class="btn btn-secondary">
-
                     Kembali
-
                 </a>
 
             </form>
 
         </div>
-
     </div>
 
 </div>
 
-
-{{-- JAVASCRIPT RATA-RATA --}}
+{{-- JAVASCRIPT HITUNG RATA-RATA --}}
 @push('scripts')
-
 <script>
-
 document.addEventListener('DOMContentLoaded', function () {
 
     const rows = document.querySelectorAll('tbody tr');
@@ -277,55 +195,33 @@ document.addEventListener('DOMContentLoaded', function () {
     rows.forEach(function (row) {
 
         const inputs = row.querySelectorAll('.nilai-input');
-
         const rata = row.querySelector('.rata-rata');
 
         function hitungRataRata() {
-
             let total = 0;
             let jumlah = 0;
 
             inputs.forEach(function (input) {
-
                 if (input.value !== '') {
-
                     total += parseFloat(input.value);
                     jumlah++;
-
                 }
-
             });
 
-            if (jumlah > 0) {
-
-                rata.textContent =
-                    (total / jumlah).toFixed(2);
-
-            } else {
-
-                rata.textContent = '-';
-
-            }
-
+            rata.textContent = jumlah > 0
+                ? (total / jumlah).toFixed(2)
+                : '-';
         }
 
         inputs.forEach(function (input) {
-
-            input.addEventListener(
-                'input',
-                hitungRataRata
-            );
-
+            input.addEventListener('input', hitungRataRata);
         });
 
         hitungRataRata();
-
     });
 
 });
-
 </script>
-
 @endpush
 
 @endsection

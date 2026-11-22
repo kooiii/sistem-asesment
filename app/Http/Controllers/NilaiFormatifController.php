@@ -12,7 +12,7 @@ use App\Models\TahunAjaran;
 class NilaiFormatifController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Daftar TP.
      */
     public function index()
     {
@@ -20,292 +20,182 @@ class NilaiFormatifController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Halaman input dan edit nilai formatif.
      */
     public function create(Request $request)
-{
-    $guru = Guru::with([
-        'kelas',
-        'mapel'
-    ])->findOrFail(session('id'));
+    {
+        $guru = Guru::with(['kelas', 'mapel'])
+            ->findOrFail(session('id'));
 
-    $tp = TujuanPembelajaran::with([
-        'kelas',
-        'mapel'
-    ])->findOrFail($request->tp);
+        $request->validate([
+            'tp' => 'required|exists:tujuan_pembelajarans,id',
+        ]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Validasi Context Guru
-    |--------------------------------------------------------------------------
-    */
+        $tp = TujuanPembelajaran::with(['kelas', 'mapel'])
+            ->findOrFail($request->tp);
 
-    if ($tp->guru_id != $guru->id) {
-        abort(403);
-    }
+        // Validasi kepemilikan TP dan konteks mengajar guru.
+        if (
+            $tp->guru_id != $guru->id ||
+            $tp->kelas_id != session('kelas_aktif') ||
+            $tp->mapel_id != session('mapel_aktif')
+        ) {
+            abort(403);
+        }
 
-    if ($tp->kelas_id != session('kelas_aktif')) {
-        abort(403);
-    }
+        // Tahun ajaran aktif.
+        $tahun = TahunAjaran::where('aktif', true)->first();
 
-    if ($tp->mapel_id != session('mapel_aktif')) {
-        abort(403);
-    }
+        if (!$tahun) {
+            return redirect()
+                ->route('tujuan-pembelajaran.index')
+                ->with('error', 'Tahun ajaran aktif belum tersedia.');
+        }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Tahun Ajaran Aktif
-    |--------------------------------------------------------------------------
-    */
+        // Ambil seluruh siswa pada kelas aktif.
+        $siswas = Siswa::where('kelas_id', session('kelas_aktif'))
+            ->orderBy('nama')
+            ->get();
 
-    $tahun = TahunAjaran::where('aktif', true)->first();
+        // Ambil nilai yang sudah tersimpan agar tetap tampil
+        // ketika halaman dibuka kembali setelah penyimpanan.
+        foreach ($siswas as $siswa) {
+            $nilai = NilaiFormatif::where('tp_id', $tp->id)
+                ->where('siswa_id', $siswa->id)
+                ->where('tahun_ajaran_id', $tahun->id)
+                ->get()
+                ->keyBy('teknik');
 
-    if (!$tahun) {
-        return back()->with(
-            'error',
-            'Tahun ajaran aktif belum tersedia.'
-        );
-    }
+            $siswa->tugas = optional($nilai->get('Tugas'))->nilai;
+            $siswa->kuis = optional($nilai->get('Kuis'))->nilai;
+            $siswa->praktik = optional($nilai->get('Praktik'))->nilai;
+            $siswa->presentasi = optional($nilai->get('Presentasi'))->nilai;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ambil siswa sesuai kelas aktif
-    |--------------------------------------------------------------------------
-    */
+            $daftarNilai = array_filter([
+                $siswa->tugas,
+                $siswa->kuis,
+                $siswa->praktik,
+                $siswa->presentasi,
+            ], function ($value) {
+                return $value !== null;
+            });
 
-    $siswas = Siswa::where(
-        'kelas_id',
-        session('kelas_aktif')
-    )
-    ->orderBy('nama')
-    ->get();
+            $siswa->rata = count($daftarNilai)
+                ? round(array_sum($daftarNilai) / count($daftarNilai), 2)
+                : null;
+        }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ambil nilai formatif tahun ajaran aktif
-    |--------------------------------------------------------------------------
-    */
-
-    foreach ($siswas as $siswa) {
-
-        $nilai = NilaiFormatif::where(
-            'tp_id',
-            $tp->id
-        )
-        ->where(
-            'siswa_id',
-            $siswa->id
-        )
-        ->where(
-            'tahun_ajaran_id',
-            $tahun->id
-        )
-        ->get()
-        ->keyBy('teknik');
-
-        $siswa->tugas =
-            optional($nilai->get('Tugas'))->nilai;
-
-        $siswa->kuis =
-            optional($nilai->get('Kuis'))->nilai;
-
-        $siswa->praktik =
-            optional($nilai->get('Praktik'))->nilai;
-
-        $siswa->presentasi =
-            optional($nilai->get('Presentasi'))->nilai;
-
-        $array = array_filter([
-            $siswa->tugas,
-            $siswa->kuis,
-            $siswa->praktik,
-            $siswa->presentasi
-        ], function ($v) {
-            return $v !== null;
-        });
-
-        $siswa->rata = count($array)
-            ? round(array_sum($array) / count($array), 2)
-            : null;
-    }
-
-    return view(
-        'nilai_formatif.create',
-        compact(
+        return view('nilai_formatif.create', compact(
             'guru',
             'tp',
             'siswas',
             'tahun'
-        )
-    );
-}
+        ));
+    }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan atau perbarui nilai formatif.
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'tp_id' => 'required|exists:tujuan_pembelajarans,id',
+    {
+        $request->validate([
+            'tp_id' => 'required|exists:tujuan_pembelajarans,id',
 
-        'siswa_id' => 'required|array',
-        'siswa_id.*' => 'exists:siswas,id',
+            'siswa_id' => 'required|array',
+            'siswa_id.*' => 'required|exists:siswas,id',
 
-        'tugas' => 'nullable|array',
-        'tugas.*' => 'nullable|numeric|min:0|max:100',
+            'tugas' => 'nullable|array',
+            'tugas.*' => 'nullable|numeric|min:0|max:100',
 
-        'kuis' => 'nullable|array',
-        'kuis.*' => 'nullable|numeric|min:0|max:100',
+            'kuis' => 'nullable|array',
+            'kuis.*' => 'nullable|numeric|min:0|max:100',
 
-        'praktik' => 'nullable|array',
-        'praktik.*' => 'nullable|numeric|min:0|max:100',
+            'praktik' => 'nullable|array',
+            'praktik.*' => 'nullable|numeric|min:0|max:100',
 
-        'presentasi' => 'nullable|array',
-        'presentasi.*' => 'nullable|numeric|min:0|max:100',
-    ]);
+            'presentasi' => 'nullable|array',
+            'presentasi.*' => 'nullable|numeric|min:0|max:100',
+        ]);
 
-    $guru = Guru::with([
-        'kelas',
-        'mapel'
-    ])->findOrFail(session('id'));
+        $guru = Guru::findOrFail(session('id'));
+        $tp = TujuanPembelajaran::findOrFail($request->tp_id);
 
-    $tp = TujuanPembelajaran::findOrFail($request->tp_id);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Validasi Context Guru
-    |--------------------------------------------------------------------------
-    */
-    if($tp->guru_id != $guru->id){
-        abort(403);
-    }
-
-    if($tp->kelas_id != session('kelas_aktif')){
-        abort(403);
-    }
-
-    if($tp->mapel_id != session('mapel_aktif')){
-        abort(403);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Tahun Ajaran Aktif
-    |--------------------------------------------------------------------------
-    */
-
-    $tahun = TahunAjaran::where('aktif',true)->first();
-
-    if(!$tahun){
-
-        return back()->with(
-
-            'error',
-
-            'Tahun ajaran aktif belum tersedia.'
-
-        );
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Simpan Nilai
-    |--------------------------------------------------------------------------
-    */
-
-    foreach($request->siswa_id as $i => $siswaId){
-
-        $siswa = Siswa::findOrFail($siswaId);
-
-        if($siswa->kelas_id != session('kelas_aktif')){
-            continue;
+        // Validasi kepemilikan TP dan konteks mengajar guru.
+        if (
+            $tp->guru_id != $guru->id ||
+            $tp->kelas_id != session('kelas_aktif') ||
+            $tp->mapel_id != session('mapel_aktif')
+        ) {
+            abort(403);
         }
 
-        $nilaiArray = [
+        $tahun = TahunAjaran::where('aktif', true)->first();
 
-            'Tugas'      => $request->tugas[$i] ?? null,
+        if (!$tahun) {
+            return back()
+                ->withInput()
+                ->with('error', 'Tahun ajaran aktif belum tersedia.');
+        }
 
-            'Kuis'       => $request->kuis[$i] ?? null,
+        // Simpan atau perbarui nilai setiap siswa.
+        foreach ($request->siswa_id as $i => $siswaId) {
+            $siswa = Siswa::findOrFail($siswaId);
 
-            'Praktik'    => $request->praktik[$i] ?? null,
-
-            'Presentasi' => $request->presentasi[$i] ?? null,
-
-        ];
-
-        foreach($nilaiArray as $teknik => $nilai){
-
-            if($nilai === '' || $nilai === null){
-                continue;
+            // Pastikan siswa memang berasal dari kelas aktif.
+            if ($siswa->kelas_id != session('kelas_aktif')) {
+                abort(403);
             }
 
-            NilaiFormatif::updateOrCreate(
+            $nilaiArray = [
+                'Tugas' => $request->input("tugas.$i"),
+                'Kuis' => $request->input("kuis.$i"),
+                'Praktik' => $request->input("praktik.$i"),
+                'Presentasi' => $request->input("presentasi.$i"),
+            ];
 
-                [
-
+            foreach ($nilaiArray as $teknik => $nilai) {
+                $kondisi = [
                     'tp_id' => $tp->id,
-
                     'siswa_id' => $siswaId,
-
                     'teknik' => $teknik,
+                    'tahun_ajaran_id' => $tahun->id,
+                ];
 
-                    'tahun_ajaran_id' => $tahun->id
+                if ($nilai === null || $nilai === '') {
+                    // Jika kolom dikosongkan, hapus nilai lama untuk teknik tersebut.
+                    NilaiFormatif::where($kondisi)->delete();
+                    continue;
+                }
 
-                ],
-
-                [
-
-                    'nilai' => $nilai
-
-                ]
-
-            );
-
+                // Jika sudah ada, perbarui. Jika belum ada, buat data baru.
+                NilaiFormatif::updateOrCreate(
+                    $kondisi,
+                    ['nilai' => $nilai]
+                );
+            }
         }
 
+        // Kembali ke halaman input TP yang sama, bukan ke daftar TP.
+        return redirect()
+            ->route('nilai-formatif.create', ['tp' => $tp->id])
+            ->with('success', 'Nilai Formatif berhasil disimpan.');
     }
 
-    return redirect()
-
-        ->route('tujuan-pembelajaran.index')
-
-        ->with(
-
-            'success',
-
-            'Nilai Formatif berhasil disimpan.'
-
-        );
-}
-
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         abort(404);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         abort(404);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         abort(404);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         abort(404);

@@ -10,24 +10,23 @@ use App\Models\TahunAjaran;
 
 class NilaiSumatifController extends Controller
 {
+    /**
+     * Menampilkan daftar nilai STS atau SAS.
+     */
     public function index(Request $request)
     {
-        $guru = Guru::with([
-            'kelas',
-            'mapel'
-        ])->findOrFail(session('id'));
+        $guru = Guru::with(['kelas', 'mapel'])
+            ->findOrFail(session('id'));
 
         $kelasAktif = session('kelas_aktif');
         $mapelAktif = session('mapel_aktif');
 
         $jenis = $request->jenis ?? 'STS';
 
-        // Pastikan jenis hanya STS atau SAS
         if (!in_array($jenis, ['STS', 'SAS'])) {
             $jenis = 'STS';
         }
 
-        // Tahun ajaran aktif
         $tahun = TahunAjaran::where('aktif', true)->first();
 
         if (!$tahun) {
@@ -51,18 +50,20 @@ class NilaiSumatifController extends Controller
             ->orderBy('siswa_id')
             ->get();
 
-        return view(
-            'nilai_sumatif.index',
-            compact(
-                'data',
-                'jenis'
-            )
-        );
+        return view('nilai_sumatif.index', compact(
+            'data',
+            'jenis'
+        ));
     }
 
-
+    /**
+     * Halaman input dan edit nilai STS atau SAS.
+     */
     public function create(Request $request)
     {
+        $guru = Guru::with(['kelas', 'mapel'])
+            ->findOrFail(session('id'));
+
         $kelasAktif = session('kelas_aktif');
         $mapelAktif = session('mapel_aktif');
 
@@ -72,19 +73,26 @@ class NilaiSumatifController extends Controller
             $jenis = 'STS';
         }
 
+        // Pastikan kelas merupakan penugasan guru.
+        if (!$guru->kelas->pluck('id')->contains($kelasAktif)) {
+            abort(403);
+        }
+
+        // Pastikan mapel merupakan penugasan guru.
+        if (!$guru->mapel->pluck('id')->contains($mapelAktif)) {
+            abort(403);
+        }
+
         $tahun = TahunAjaran::where('aktif', true)->first();
 
         if (!$tahun) {
-            return back()->with(
-                'error',
-                'Tahun ajaran aktif belum tersedia.'
-            );
+            return redirect()
+                ->route('nilai-sumatif.index', ['jenis' => $jenis])
+                ->with('error', 'Tahun ajaran aktif belum tersedia.');
         }
 
-        $siswas = Siswa::where(
-            'kelas_id',
-            $kelasAktif
-        )
+        // Ambil siswa dan nilai sumatif yang sudah tersimpan.
+        $siswas = Siswa::where('kelas_id', $kelasAktif)
             ->with([
                 'nilaiSumatif' => function ($q) use (
                     $mapelAktif,
@@ -93,25 +101,23 @@ class NilaiSumatifController extends Controller
                 ) {
                     $q->where('mapel_id', $mapelAktif)
                         ->where('jenis', $jenis)
-                        ->where(
-                            'tahun_ajaran_id',
-                            $tahun->id
-                        );
+                        ->where('tahun_ajaran_id', $tahun->id);
                 }
             ])
             ->orderBy('nama')
             ->get();
 
-        return view(
-            'nilai_sumatif.create',
-            compact(
-                'siswas',
-                'jenis'
-            )
-        );
+        return view('nilai_sumatif.create', compact(
+            'guru',
+            'siswas',
+            'jenis',
+            'tahun'
+        ));
     }
 
-
+    /**
+     * Simpan atau perbarui nilai STS atau SAS.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -124,100 +130,101 @@ class NilaiSumatifController extends Controller
             'nilai.*' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $guru = Guru::with([
-            'kelas',
-            'mapel'
-        ])->findOrFail(session('id'));
+        $guru = Guru::with(['kelas', 'mapel'])
+            ->findOrFail(session('id'));
 
         $kelasAktif = session('kelas_aktif');
         $mapelAktif = session('mapel_aktif');
+        $jenis = $request->jenis;
 
-        // Pastikan guru memang mengajar kelas tersebut
+        // Validasi penugasan kelas guru.
         if (!$guru->kelas->pluck('id')->contains($kelasAktif)) {
             abort(403);
         }
 
-        // Pastikan guru memang mengajar mapel tersebut
+        // Validasi penugasan mata pelajaran guru.
         if (!$guru->mapel->pluck('id')->contains($mapelAktif)) {
             abort(403);
         }
 
-        $tahun = TahunAjaran::where(
-            'aktif',
-            true
-        )->first();
+        $tahun = TahunAjaran::where('aktif', true)->first();
 
         if (!$tahun) {
-            return back()->with(
-                'error',
-                'Tahun ajaran aktif belum tersedia.'
-            );
+            return back()
+                ->withInput()
+                ->with('error', 'Tahun ajaran aktif belum tersedia.');
         }
 
         foreach ($request->siswa_id as $i => $siswaId) {
 
             $siswa = Siswa::findOrFail($siswaId);
 
-            // Pastikan siswa berasal dari kelas aktif
+            // Pastikan siswa berasal dari kelas aktif.
             if ($siswa->kelas_id != $kelasAktif) {
+                abort(403);
+            }
+
+            $nilai = $request->input("nilai.$i");
+
+            $kondisi = [
+                'siswa_id' => $siswaId,
+                'mapel_id' => $mapelAktif,
+                'jenis' => $jenis,
+                'tahun_ajaran_id' => $tahun->id,
+            ];
+
+            // Jika kolom dikosongkan, hapus nilai sebelumnya.
+            if ($nilai === null || $nilai === '') {
+                NilaiSumatif::where($kondisi)->delete();
                 continue;
             }
 
-            $nilai = $request->nilai[$i] ?? null;
-
-            // Jika nilai kosong, jangan simpan
-            if ($nilai === '' || $nilai === null) {
-                continue;
-            }
-
+            // Perbarui nilai jika sudah ada, atau buat data baru.
             NilaiSumatif::updateOrCreate(
-                [
-                    'siswa_id' => $siswaId,
-                    'mapel_id' => $mapelAktif,
-                    'jenis' => $request->jenis,
-                    'tahun_ajaran_id' => $tahun->id
-                ],
+                $kondisi,
                 [
                     'nilai' => $nilai
                 ]
             );
         }
 
+        // Tetap berada di halaman input dengan jenis yang sama.
         return redirect()
-            ->route(
-                'nilai-sumatif.index',
-                [
-                    'jenis' => $request->jenis
-                ]
-            )
+            ->route('nilai-sumatif.create', [
+                'jenis' => $jenis
+            ])
             ->with(
                 'success',
-                'Nilai ' .
-                $request->jenis .
-                ' berhasil disimpan.'
+                'Nilai ' . $jenis . ' berhasil disimpan.'
             );
     }
 
-
+    /**
+     * Menghapus nilai sumatif.
+     */
     public function destroy($id)
     {
-        $guru = Guru::with([
-            'kelas',
-            'mapel'
-        ])->findOrFail(session('id'));
+        $guru = Guru::with(['kelas', 'mapel'])
+            ->findOrFail(session('id'));
 
         $kelasAktif = session('kelas_aktif');
         $mapelAktif = session('mapel_aktif');
 
+        if (!$guru->kelas->pluck('id')->contains($kelasAktif)) {
+            abort(403);
+        }
+
+        if (!$guru->mapel->pluck('id')->contains($mapelAktif)) {
+            abort(403);
+        }
+
         $data = NilaiSumatif::with('siswa')
             ->findOrFail($id);
 
-        // Pastikan mapel sesuai
         if ($data->mapel_id != $mapelAktif) {
             abort(403);
         }
 
-        // Pastikan siswa berasal dari kelas aktif
         if ($data->siswa->kelas_id != $kelasAktif) {
             abort(403);
         }
@@ -227,15 +234,9 @@ class NilaiSumatifController extends Controller
         $data->delete();
 
         return redirect()
-            ->route(
-                'nilai-sumatif.index',
-                [
-                    'jenis' => $jenis
-                ]
-            )
-            ->with(
-                'success',
-                'Data nilai berhasil dihapus.'
-            );
+            ->route('nilai-sumatif.index', [
+                'jenis' => $jenis
+            ])
+            ->with('success', 'Data nilai berhasil dihapus.');
     }
 }
