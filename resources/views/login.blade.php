@@ -18,10 +18,21 @@
 
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            /* LOGO SEKOLAH PADA LOGIN */
+            .school-logo {
+                width: 58px;
+                height: 58px;
+                object-fit: contain;
+                background: white;
+                border-radius: 12px;
+                padding: 4px;
+                flex-shrink: 0;
+            }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -434,14 +445,17 @@
     <div class="login-left">
 
         <div class="school-brand">
-            <div class="school-icon">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
+
+            <img
+                src="{{ asset('images/logo-sekolah.png') }}"
+                alt="Logo SMK Negeri 1 Sungai Tebelian"
+                class="school-logo">
 
             <div>
                 <h5>SMK NEGERI 1 SUNGAI TEBELIAN</h5>
                 <p>Sistem Informasi Penilaian Akademik</p>
             </div>
+
         </div>
 
         <div class="left-content">
